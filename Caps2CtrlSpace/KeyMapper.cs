@@ -145,6 +145,19 @@ namespace Caps2CtrlSpace
         private static uint IOCTL_KEYBOARD_QUERY_INDICATORS = ControlCode(FileDeviceKeyboard, 0x0010, MethodBuffered, FileAnyAccess);
         #endregion
 
+        #region Import keyboard event for setting capslock state
+        [DllImport("user32.dll")]
+        static extern void keybd_event(byte bVk, byte bScan, uint dwFlags, UIntPtr dwExtraInfo);
+
+        public static void ToggleCapsLock()
+        {
+            const int KEYEVENTF_EXTENDEDKEY = 0x1;
+            const int KEYEVENTF_KEYUP = 0x2;
+            keybd_event(0x14, 0x45, KEYEVENTF_EXTENDEDKEY, (UIntPtr)0);
+            keybd_event(0x14, 0x45, KEYEVENTF_EXTENDEDKEY | KEYEVENTF_KEYUP, (UIntPtr)0);
+        }
+        #endregion
+
         public static void ToggleLights(Locks locks)
         {
             DefineDosDevice(DddRawTargetPath, "keyboard", "\\Device\\KeyboardClass0");
@@ -230,6 +243,14 @@ namespace Caps2CtrlSpace
 
         public void SetupHook()
         {
+            // Console.CapsLock
+            // WinForm: Control.IsKeyLocked(Keys.CapsLock) 
+            // WPF: Keyboard.IsKeyToggled(Key.CapsLock)
+            if (Control.IsKeyLocked(Keys.CapsLock))
+            {
+                ToggleCapsLock();
+            }
+
             _hookID = SetHook(_proc);
         }
 
