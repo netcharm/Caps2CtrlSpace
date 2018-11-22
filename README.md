@@ -28,8 +28,8 @@ so need you start with eng-input state, then the light maybe turn-on when press 
 ## Mine Binary
 
 1. [Github](https://github.com/netcharm/Caps2CtrlSpace/blob/master/Caps2CtrlSpace.exe)
-1. [Bitbucket](https://bitbucket.org/netcharm/caps2ctrlspace/downloads/Caps2CtrlSpace.7z)
-1. [Bitbucket](https://bitbucket.org/netcharm/caps2ctrlspace/blob/master/Caps2CtrlSpace.exe)
+1. [Bitbucket](https://bitbucket.org/netcharm/caps2ctrlspace/downloads)
+1. [Bitbucket](https://bitbucket.org/netcharm/caps2ctrlspace/src/master/Caps2CtrlSpace.exe)
 
 ## Original Binary
 
