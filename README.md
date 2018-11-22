@@ -3,7 +3,6 @@
 CapsLock 切换输入法中英文
 
 > Modified by netcharm
-
 > 1. Add CapsLock Indicator Light option, but can not auto detect IME State with current input focus, 
 so need you start with eng-input state, then the light maybe turn-on when press capslock to chinese input. 
 > 1. Change application's icon.
@@ -17,7 +16,6 @@ so need you start with eng-input state, then the light maybe turn-on when press 
 # 开发环境
 
 > Modified by netcharm
-
 > 1. VS2015 Express Desktop
 > 1. .net framework 4.6
  
@@ -33,7 +31,7 @@ so need you start with eng-input state, then the light maybe turn-on when press 
 
 ## Original Binary
 
-[Github](https://github.com/cuiliang/Caps2CtrlSpace/blob/master/Caps2CtrlSpace.exe)
+1. [Github](https://github.com/cuiliang/Caps2CtrlSpace/blob/master/Caps2CtrlSpace.exe)
   
 # 使用
 
