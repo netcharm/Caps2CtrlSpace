@@ -155,13 +155,13 @@ namespace Caps2CtrlSpace
 
                 if (InstalledKeyboardLayout.Count <= 0 || !InstalledKeyboardLayout.ContainsKey(kl))
                 {
-                    InputLanguageCollection ilc = InputLanguage.InstalledInputLanguages;//获取所有安装的输入法
+                    InputLanguageCollection ilc = InputLanguage.InstalledInputLanguages; //获取所有安装的输入法
                     foreach(InputLanguage il in ilc)
                     {
                         InstalledKeyboardLayout.Add(il.Culture.KeyboardLayoutId, il.LayoutName);
                     }
                 }
-                //InputLanguage cil = InputLanguage.CurrentInputLanguage;//获取当前UI线程的输入法以及状态
+                //InputLanguage cil = InputLanguage.CurrentInputLanguage; //获取当前UI线程的输入法以及状态
                 if (InstalledKeyboardLayout.ContainsKey(kl))
                 {
                     if (kl != lastKeyboardLayout)
