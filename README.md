@@ -8,6 +8,8 @@ so need you start with eng-input state, then the light maybe turn-on when press 
 > 1. Change application's icon.
 > 1. Add Always on Top option, note: this option is not saved, so next startup, is re-enabled.
 > 1. Add contextmenu to notify tray icon for show window, exit app.
+> 1. Add Timer to auto switch CapsLock Indicator light with keyboard layout switch, but has buggy, when you change
+input state after switch to other keyboard layout and switch back, it maybe display negtived indicator light.
 
 # 原理
 
