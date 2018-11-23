@@ -192,7 +192,6 @@ namespace Caps2CtrlSpace
                     lblImeLayout.Text = $"{activeWindowThread}:{kl}, {InstalledKeyboardLayout[kl]}";
                 }
                 KeyMapper.CurrentKeyboardLayout = (uint)kl;
-                KeyMapper.ShiftState = ModifierKeys == Keys.Shift;
             }
         }
 
