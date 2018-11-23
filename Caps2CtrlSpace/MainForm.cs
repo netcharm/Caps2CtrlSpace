@@ -9,12 +9,32 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Microsoft.Win32;
+using System.Runtime.InteropServices;
+using System.Threading;
 
 namespace Caps2CtrlSpace
 {
     public partial class MainForm : Form
     {
         private const string AppName = "Caps2CtrlSpace";
+
+        #region get current input window keyboard layout functions
+        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        static extern IntPtr GetForegroundWindow();
+
+        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        static extern IntPtr GetWindowThreadProcessId(IntPtr hWnd, IntPtr ProcessId);
+
+        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        static extern IntPtr AttachThreadInput(IntPtr idAttach,
+                             IntPtr idAttachTo, bool fAttach);
+
+        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        static extern IntPtr GetFocus();
+
+        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        static extern IntPtr GetKeyboardLayout(uint thread);
+        #endregion
 
         private void SetHide(bool hide = true)
         {
@@ -118,13 +138,44 @@ namespace Caps2CtrlSpace
             timer.Enabled = chkCapsState.Checked;
         }
 
+        private Dictionary<int, string> InstalledKeyboardLayout = new Dictionary<int, string>();
+        private int lastKeyboardLayout = 1033;
         private void timer_Tick(object sender, EventArgs e)
         {
             if (chkCapsState.Checked)
             {
-                //InputLanguageCollection ilc = InputLanguage.InstalledInputLanguages;//获取所有安装的输入法
-                InputLanguage il = InputLanguage.CurrentInputLanguage;//获取当前UI线程的输入法以及状态
-                lblImeLayout.Text = $"{il.Handle}:{il.Culture.KeyboardLayoutId}, {il.LayoutName}";
+                IntPtr activeWindowHandle = GetForegroundWindow();
+                IntPtr activeWindowThread = GetWindowThreadProcessId(activeWindowHandle, IntPtr.Zero);
+                IntPtr thisWindowThread = GetWindowThreadProcessId(this.Handle, IntPtr.Zero);
+
+                AttachThreadInput(activeWindowThread, thisWindowThread, true);
+                IntPtr focusedControlHandle = GetFocus();
+                var kl = GetKeyboardLayout((uint)activeWindowThread.ToInt32()).ToInt32() & 0xFFFF;
+                AttachThreadInput(activeWindowThread, thisWindowThread, false);
+
+                if (InstalledKeyboardLayout.Count <= 0 || !InstalledKeyboardLayout.ContainsKey(kl))
+                {
+                    InputLanguageCollection ilc = InputLanguage.InstalledInputLanguages;//获取所有安装的输入法
+                    foreach(InputLanguage il in ilc)
+                    {
+                        InstalledKeyboardLayout.Add(il.Culture.KeyboardLayoutId, il.LayoutName);
+                    }
+                }
+                //InputLanguage cil = InputLanguage.CurrentInputLanguage;//获取当前UI线程的输入法以及状态
+                if (InstalledKeyboardLayout.ContainsKey(kl))
+                {
+                    if (kl != lastKeyboardLayout)
+                    {
+                        if (IsKeyLocked(Keys.CapsLock))
+                        {
+                            KeyMapper.ToggleCapsLock();
+                            Thread.Sleep(100);
+                        }
+                        lastKeyboardLayout = kl;
+                    }
+                    lblImeLayout.Text = $"{focusedControlHandle}:{kl}, {InstalledKeyboardLayout[kl]}";
+                }
+                KeyMapper.CurrentKeyboardLayout = (uint)kl;
             }
         }
 

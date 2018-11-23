@@ -14,63 +14,28 @@ namespace Caps2CtrlSpace
 {
     public class KeyMapper
     {
-        #region Import low level keyboard hook functions
-        //[DllImport("user32.dll")]
-        //static extern IntPtr GetForegroundWindow();
-        //[DllImport("user32.dll")]
-        //static extern uint GetWindowThreadProcessId(IntPtr hwnd, IntPtr proccess);
-        //[DllImport("user32.dll")]
-        //static extern IntPtr GetKeyboardLayout(uint thread);
-        //public static CultureInfo GetCurrentKeyboardLayout()
-        //{
-        //    try
-        //    {
-        //        IntPtr foregroundWindow = GetForegroundWindow();
-        //        uint foregroundProcess = GetWindowThreadProcessId(foregroundWindow, IntPtr.Zero);
-        //        var layout = GetKeyboardLayout(foregroundProcess);
-        //        Console.WriteLine(layout);
-        //        int keyboardLayout = layout.ToInt32() & 0xFFFF;
-        //        return new CultureInfo(keyboardLayout);
-        //    }
-        //    catch (Exception _)
-        //    {
-        //        return new CultureInfo(1033); // Assume English if something went wrong.
-        //    }
-        //}
+        static public bool CapsLockLight { get; set; } = false;
 
-        //[DllImport("imm32.dll")]
-        //public static extern IntPtr ImmGetContext(IntPtr hWnd);
+        static public uint CurrentKeyboardLayout { get; set; } = 1033;
 
-        //[DllImport("Imm32.dll")]
-        //public static extern bool ImmReleaseContext(IntPtr hWnd, IntPtr hIMC);
+        private delegate IntPtr HookProc(int nCode, IntPtr wParam, IntPtr lParam);
 
-        //[DllImport("Imm32.dll", CharSet = CharSet.Unicode)]
-        //private static extern int ImmGetCompositionStringW(IntPtr hIMC, int dwIndex, byte[] lpBuf, int dwBufLen);
-
-        //[DllImport("Imm32.dll")]
-        //public static extern bool ImmGetOpenStatus(IntPtr hIMC);
-
-        private delegate IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam);
+        #region Hook functions
+        [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        private static extern IntPtr GetModuleHandle(string lpModuleName);
 
         [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        private static extern IntPtr SetWindowsHookEx(int idHook, LowLevelKeyboardProc lpfn, IntPtr hMod, uint dwThreadId);
-
-
-        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-
-        private static extern bool UnhookWindowsHookEx(IntPtr hhk);
-
+        private static extern IntPtr SetWindowsHookEx(int idHook, HookProc lpfn, IntPtr hMod, uint dwThreadId);
 
         [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
         private static extern IntPtr CallNextHookEx(IntPtr hhk, int nCode, IntPtr wParam, IntPtr lParam);
 
-
-        [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        private static extern IntPtr GetModuleHandle(string lpModuleName);
+        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool UnhookWindowsHookEx(IntPtr hhk);
         #endregion
 
-        #region Import keyboard indication light functions
+        #region Keyboard indication light functions
         [DllImport("kernel32.dll")]
         static extern bool DefineDosDevice(uint dwFlags, string lpDeviceName, string lpTargetPath);
 
@@ -143,20 +108,6 @@ namespace Caps2CtrlSpace
 
         private static uint IOCTL_KEYBOARD_SET_INDICATORS = ControlCode(FileDeviceKeyboard, 0x0002, MethodBuffered, FileAnyAccess);
         private static uint IOCTL_KEYBOARD_QUERY_INDICATORS = ControlCode(FileDeviceKeyboard, 0x0010, MethodBuffered, FileAnyAccess);
-        #endregion
-
-        #region Import keyboard event for setting capslock state
-        [DllImport("user32.dll")]
-        static extern void keybd_event(byte bVk, byte bScan, uint dwFlags, UIntPtr dwExtraInfo);
-
-        public static void ToggleCapsLock()
-        {
-            const int KEYEVENTF_EXTENDEDKEY = 0x1;
-            const int KEYEVENTF_KEYUP = 0x2;
-            keybd_event(0x14, 0x45, KEYEVENTF_EXTENDEDKEY, (UIntPtr)0);
-            keybd_event(0x14, 0x45, KEYEVENTF_EXTENDEDKEY | KEYEVENTF_KEYUP, (UIntPtr)0);
-        }
-        #endregion
 
         public static void ToggleLights(Locks locks)
         {
@@ -184,45 +135,53 @@ namespace Caps2CtrlSpace
                 }
             }
         }
+        #endregion
 
-        static private bool capslocklight = false;
-        static public bool CapsLockLight
+        #region Keyboard event for toggle capslock state
+        [DllImport("user32.dll")]
+        static extern void keybd_event(byte bVk, byte bScan, uint dwFlags, UIntPtr dwExtraInfo);
+
+        public static void ToggleCapsLock()
         {
-            get
-            {
-                return (capslocklight);
-            }
-            set
-            {
-                capslocklight = value;
-            }
+            const int KEYEVENTF_EXTENDEDKEY = 0x1;
+            const int KEYEVENTF_KEYUP = 0x2;
+            keybd_event(0x14, 0x45, KEYEVENTF_EXTENDEDKEY, (UIntPtr)0);
+            keybd_event(0x14, 0x45, KEYEVENTF_EXTENDEDKEY | KEYEVENTF_KEYUP, (UIntPtr)0);
         }
+        #endregion
 
+        #region Keyboard Hook
         private const int WH_KEYBOARD_LL = 13;
 
         private const int WM_KEYDOWN = 0x0100;
 
-        private static IntPtr _hookID = IntPtr.Zero;
+        private static uint[] CapsLockEnabledLayout = new uint[] { 2052, 1028, 1041 };
 
-        private static IntPtr HookCallback(int nCode, IntPtr wParam, IntPtr lParam)
+        private static IntPtr _keyboardHookID = IntPtr.Zero;
+
+        private static IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam)
         {
             if (nCode >= 0 && wParam == (IntPtr)WM_KEYDOWN)
             {
                 int vkCode = Marshal.ReadInt32(lParam);
-                if ((Keys)vkCode == Keys.Capital)
+                if ((Keys)vkCode == Keys.Capital && CapsLockEnabledLayout.Contains(CurrentKeyboardLayout))
                 {
-                    SendKeys.Send("^ "); //将CapsLock转换为Ctrl+Space
-                    if(capslocklight)
-                        ToggleLights(Locks.KeyboardCapsLockOn);
+                    if(CurrentKeyboardLayout == 2052 || CurrentKeyboardLayout == 1028)
+                        SendKeys.Send("^ "); //将CapsLock转换为Ctrl+Space
+                    else if(CurrentKeyboardLayout == 1041)
+                        SendKeys.Send("+{CAPSLOCK}"); //将CapsLock转换为Ctrl+Space
+
+                    if (CapsLockLight) ToggleLights(Locks.KeyboardCapsLockOn);
+
                     return (IntPtr)1;
                 }
             }
-            return CallNextHookEx(_hookID, nCode, wParam, lParam);
+            return CallNextHookEx(_keyboardHookID, nCode, wParam, lParam);
         }
 
-        private static LowLevelKeyboardProc _proc = HookCallback;
+        private static HookProc _keyboardProc = LowLevelKeyboardProc;
 
-        private static IntPtr SetHook(LowLevelKeyboardProc proc)
+        private static IntPtr SetKeyBoardHook(HookProc proc)
         {
             using (Process curProcess = Process.GetCurrentProcess())
             {
@@ -232,12 +191,81 @@ namespace Caps2CtrlSpace
                 }
             }
         }
+        #endregion
+
+        #region IME Hook
+
+        private const int WH_MSGFILTER                = -1;
+        private const int WH_KEYBOARD                 = 0x0002;
+        private const int WH_GETMESSAGE               = 0x0003;
+        private const int WH_CALLWNDPROC              = 0x0004;
+        private const int WH_CBT                      = 0x0005;
+        private const int WH_SYSMSGFILTER             = 0x0006;
+        private const int WH_MOUSE                    = 0x0007;
+        private const int WH_HARDWARE                 = 0x0008;
+        private const int WH_DEBUG                    = 0x0009;
+        private const int WH_SHELL                    = 0x000A;
+        private const int WH_MWH_FOREGROUNDIDLEOUSE   = 0x000B;
+        private const int WH_CALLWNDPROCRET           = 0x000C;
+        private const int WH_MOUSE_LL                 = 0x000E;
+
+        private const int WM_IME_NOTIFY               = 0x0282;
+
+        // wParam of report message WM_IME_NOTIFY
+        private const int IMN_CLOSESTATUSWINDOW       =    0x0001;
+        private const int IMN_OPENSTATUSWINDOW        =    0x0002;
+        private const int IMN_CHANGECANDIDATE         =    0x0003;
+        private const int IMN_CLOSECANDIDATE          =    0x0004;
+        private const int IMN_OPENCANDIDATE           =    0x0005;
+        private const int IMN_SETCONVERSIONMODE       =    0x0006;
+        private const int IMN_SETSENTENCEMODE         =    0x0007;
+        private const int IMN_SETOPENSTATUS           =    0x0008;
+        private const int IMN_SETCANDIDATEPOS         =    0x0009;
+        private const int IMN_SETCOMPOSITIONFONT      =    0x000A;
+        private const int IMN_SETCOMPOSITIONWINDOW    =    0x000B;
+        private const int IMN_SETSTATUSWINDOWPOS      =    0x000C;
+        private const int IMN_GUIDELINE               =    0x000D;
+        private const int IMN_PRIVATE                 =    0x000E;
+
+        private static IntPtr _imeHookID = IntPtr.Zero;
+
+        private static IntPtr ImeProc(int nCode, IntPtr wParam, IntPtr lParam)
+        {
+            if (nCode >= 0 && wParam == (IntPtr)WM_IME_NOTIFY)
+            {
+                //int vkCode = Marshal.ReadInt32(lParam);
+                //if ((Keys)vkCode == Keys.Capital)
+                //{
+                //    return (IntPtr)1;
+                //}
+            }
+            return CallNextHookEx(_imeHookID, nCode, wParam, lParam);
+        }
+
+        private static HookProc _imeProc = ImeProc;
+
+        private static IntPtr SetImeHook(HookProc proc)
+        {
+            using (Process curProcess = Process.GetCurrentProcess())
+            {
+                using (ProcessModule curModule = curProcess.MainModule)
+                {                    
+                    return SetWindowsHookEx(WH_SHELL, proc, GetModuleHandle(curModule.ModuleName), (uint)curProcess.Threads[0].Id);
+                }
+            }
+        }
+        #endregion
 
         ~KeyMapper()
         {
-            if (_hookID != IntPtr.Zero)
+            if (_imeHookID != IntPtr.Zero)
             {
-                UnhookWindowsHookEx(_hookID);
+                UnhookWindowsHookEx(_imeHookID);
+            }
+
+            if (_keyboardHookID != IntPtr.Zero)
+            {
+                UnhookWindowsHookEx(_keyboardHookID);
             }
         }
 
@@ -251,7 +279,25 @@ namespace Caps2CtrlSpace
                 ToggleCapsLock();
             }
 
-            _hookID = SetHook(_proc);
+            //try
+            //{
+            //    _imeHookID = SetImeHook(_imeProc);
+            //    if (_imeHookID == IntPtr.Zero) throw new System.ComponentModel.Win32Exception();
+            //}
+            //catch(Exception ex)
+            //{
+            //    MessageBox.Show(ex.Message);
+            //}
+
+            try
+            {
+                _keyboardHookID = SetKeyBoardHook(_keyboardProc);
+                if (_keyboardHookID == IntPtr.Zero) throw new System.ComponentModel.Win32Exception();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
         }
 
     }
