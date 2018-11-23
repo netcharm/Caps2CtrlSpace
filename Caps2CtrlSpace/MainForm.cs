@@ -79,6 +79,9 @@ namespace Caps2CtrlSpace
 
             chkOnTop.Checked = true;
             chkCapsState.Checked = true;
+#if !DEBUG
+            SetHide(true);
+#endif
         }
 
         private void MainForm_Resize(object sender, EventArgs e)
@@ -182,13 +185,14 @@ namespace Caps2CtrlSpace
                         if (IsKeyLocked(Keys.CapsLock))
                         {
                             KeyMapper.ToggleCapsLock();
-                            Thread.Sleep(100);
+                            //Thread.Sleep(120);
                         }
                         lastKeyboardLayout = kl;
                     }
                     lblImeLayout.Text = $"{activeWindowThread}:{kl}, {InstalledKeyboardLayout[kl]}";
                 }
                 KeyMapper.CurrentKeyboardLayout = (uint)kl;
+                KeyMapper.ShiftState = ModifierKeys == Keys.Shift;
             }
         }
 

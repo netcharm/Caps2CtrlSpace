@@ -16,6 +16,7 @@ namespace Caps2CtrlSpace
     {
         static public bool CapsLockLight { get; set; } = false;
 
+        static public bool ShiftState { get; set; } = false;
         static public uint CurrentKeyboardLayout { get; set; } = 1033;
 
         private delegate IntPtr HookProc(int nCode, IntPtr wParam, IntPtr lParam);
@@ -154,27 +155,50 @@ namespace Caps2CtrlSpace
         private const int WH_KEYBOARD_LL = 13;
 
         private const int WM_KEYDOWN = 0x0100;
+        private const int WM_SYSKEYDOWN = 0x0104;
 
         private static uint[] CapsLockEnabledLayout = new uint[] { 2052, 1028, 1041 };
 
         private static IntPtr _keyboardHookID = IntPtr.Zero;
+        private static int[] lastVKs = new int[3] { 0, 0, 0 };
+        private static int lastVK = 0;
 
         private static IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam)
         {
             if (nCode >= 0 && wParam == (IntPtr)WM_KEYDOWN)
             {
                 int vkCode = Marshal.ReadInt32(lParam);
+#if DEBUG
+                Console.WriteLine($"KeyCode: {vkCode}");
+#endif
                 if ((Keys)vkCode == Keys.Capital && CapsLockEnabledLayout.Contains(CurrentKeyboardLayout))
                 {
-                    if(CurrentKeyboardLayout == 2052 || CurrentKeyboardLayout == 1028)
-                        SendKeys.Send("^ "); //将CapsLock转换为Ctrl+Space
-                    else if(CurrentKeyboardLayout == 1041)
-                        SendKeys.Send("+{CAPSLOCK}"); //将CapsLock转换为Ctrl+Space
-
-                    if (CapsLockLight) ToggleLights(Locks.KeyboardCapsLockOn);
-
+                    try
+                    {
+                        if (CurrentKeyboardLayout == 2052 || CurrentKeyboardLayout == 1028)
+                        {
+                            SendKeys.Send("^ "); //将CapsLock转换为Ctrl+Space
+                            if (CapsLockLight) ToggleLights(Locks.KeyboardCapsLockOn);
+                        }                            
+                        else if (CurrentKeyboardLayout == 1041)
+                        {
+                            if (lastVK != 240 && lastVK != 20)
+                            {
+                                SendKeys.Send("+{CAPSLOCK}"); //将CapsLock转换为Shift+CapsLock
+                                if (CapsLockLight) ToggleLights(Locks.KeyboardCapsLockOn);
+                                //Thread.Sleep(100);
+                                lastVK = 0;
+                            }
+                        }
+                    }
+                    catch(Exception)
+                    {
+                        //MessageBox.Show(ex.Message);
+                        //throw new System.ComponentModel.Win32Exception();
+                    }
                     return (IntPtr)1;
                 }
+                lastVK = vkCode;
             }
             return CallNextHookEx(_keyboardHookID, nCode, wParam, lParam);
         }
@@ -191,7 +215,7 @@ namespace Caps2CtrlSpace
                 }
             }
         }
-        #endregion
+#endregion
 
         ~KeyMapper()
         {
