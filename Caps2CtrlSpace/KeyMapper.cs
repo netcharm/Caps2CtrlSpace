@@ -163,15 +163,25 @@ namespace Caps2CtrlSpace
         private static int[] lastVKs = new int[3] { 0, 0, 0 };
         private static int lastVK = 0;
 
+        private struct KBDLLHOOKSTRUCT
+        {
+            public int vkCode;
+            public int scanCode;
+            public int flags;
+            public int time;
+            public int dwExtraInfo;
+        }
+
         private static IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam)
         {
             if (nCode >= 0 && wParam == (IntPtr)WM_KEYDOWN)
             {
+                var kbd = (KBDLLHOOKSTRUCT)Marshal.PtrToStructure(lParam, typeof(KBDLLHOOKSTRUCT));
                 int vkCode = Marshal.ReadInt32(lParam);
 #if DEBUG
-                Console.WriteLine($"KeyCode: {vkCode}");
+                Console.WriteLine($"KeyCode: {vkCode}, {kbd.scanCode}, {kbd.flags}");
 #endif
-                if ((Keys)vkCode == Keys.Capital && CapsLockEnabledLayout.Contains(CurrentKeyboardLayout))
+                if (kbd.flags == 0 && (Keys)vkCode == Keys.Capital && CapsLockEnabledLayout.Contains(CurrentKeyboardLayout))
                 {
                     try
                     {
@@ -182,7 +192,7 @@ namespace Caps2CtrlSpace
                         }                            
                         else if (CurrentKeyboardLayout == 1041)
                         {
-                            if (lastVK != 240 && lastVK != 20)
+                            //if (lastVK != 240 && lastVK != 20)
                             {
                                 SendKeys.Send("+{CAPSLOCK}"); //将CapsLock转换为Shift+CapsLock
                                 if (CapsLockLight) ToggleLights(Locks.KeyboardCapsLockOn);
