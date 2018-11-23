@@ -79,8 +79,6 @@ namespace Caps2CtrlSpace
 
             chkOnTop.Checked = true;
             chkCapsState.Checked = true;
-
-            //SetHide();
         }
 
         private void MainForm_Resize(object sender, EventArgs e)
@@ -99,6 +97,16 @@ namespace Caps2CtrlSpace
         private void notifyIcon_MouseDoubleClick(object sender, MouseEventArgs e)
         {
             SetHide(false);
+        }
+
+        private void tsmiShow_Click(object sender, EventArgs e)
+        {
+            SetHide(false);
+        }
+
+        private void tsmiExit_Click(object sender, EventArgs e)
+        {
+            Close();
         }
 
         private void chkAutoRun_CheckedChanged(object sender, EventArgs e)
@@ -122,14 +130,9 @@ namespace Caps2CtrlSpace
             }
         }
 
-        private void tsmiShow_Click(object sender, EventArgs e)
+        private void chkOnTop_CheckedChanged(object sender, EventArgs e)
         {
-            SetHide(false);
-        }
-
-        private void tsmiExit_Click(object sender, EventArgs e)
-        {
-            Close();
+            this.TopMost = chkOnTop.Checked;
         }
 
         private void chkCapsState_CheckedChanged(object sender, EventArgs e)
@@ -140,18 +143,28 @@ namespace Caps2CtrlSpace
 
         private Dictionary<int, string> InstalledKeyboardLayout = new Dictionary<int, string>();
         private int lastKeyboardLayout = 1033;
+
+        private Tuple<int, int> GetFocusKeyboardLayout()
+        {
+            IntPtr activeWindowHandle = GetForegroundWindow();
+            IntPtr activeWindowThread = GetWindowThreadProcessId(activeWindowHandle, IntPtr.Zero);
+            //IntPtr thisWindowThread = GetWindowThreadProcessId(this.Handle, IntPtr.Zero);
+
+            //AttachThreadInput(activeWindowThread, thisWindowThread, true);
+            //IntPtr focusedControlHandle = GetFocus();
+            var kl = GetKeyboardLayout((uint)activeWindowThread.ToInt32()).ToInt32() & 0xFFFF;
+            //AttachThreadInput(activeWindowThread, thisWindowThread, false);
+            return(new Tuple<int, int>(activeWindowHandle.ToInt32(), kl));
+        }
+
         private void timer_Tick(object sender, EventArgs e)
         {
             if (chkCapsState.Checked)
             {
+                //var klt = GetFocusKeyboardLayout();
                 IntPtr activeWindowHandle = GetForegroundWindow();
                 IntPtr activeWindowThread = GetWindowThreadProcessId(activeWindowHandle, IntPtr.Zero);
-                IntPtr thisWindowThread = GetWindowThreadProcessId(this.Handle, IntPtr.Zero);
-
-                AttachThreadInput(activeWindowThread, thisWindowThread, true);
-                IntPtr focusedControlHandle = GetFocus();
                 var kl = GetKeyboardLayout((uint)activeWindowThread.ToInt32()).ToInt32() & 0xFFFF;
-                AttachThreadInput(activeWindowThread, thisWindowThread, false);
 
                 if (InstalledKeyboardLayout.Count <= 0 || !InstalledKeyboardLayout.ContainsKey(kl))
                 {
@@ -173,15 +186,11 @@ namespace Caps2CtrlSpace
                         }
                         lastKeyboardLayout = kl;
                     }
-                    lblImeLayout.Text = $"{focusedControlHandle}:{kl}, {InstalledKeyboardLayout[kl]}";
+                    lblImeLayout.Text = $"{activeWindowThread}:{kl}, {InstalledKeyboardLayout[kl]}";
                 }
                 KeyMapper.CurrentKeyboardLayout = (uint)kl;
             }
         }
 
-        private void chkOnTop_CheckedChanged(object sender, EventArgs e)
-        {
-            this.TopMost = chkOnTop.Checked;
-        }
     }
 }

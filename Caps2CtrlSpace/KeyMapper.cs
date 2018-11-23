@@ -193,76 +193,8 @@ namespace Caps2CtrlSpace
         }
         #endregion
 
-        #region IME Hook
-
-        private const int WH_MSGFILTER                = -1;
-        private const int WH_KEYBOARD                 = 0x0002;
-        private const int WH_GETMESSAGE               = 0x0003;
-        private const int WH_CALLWNDPROC              = 0x0004;
-        private const int WH_CBT                      = 0x0005;
-        private const int WH_SYSMSGFILTER             = 0x0006;
-        private const int WH_MOUSE                    = 0x0007;
-        private const int WH_HARDWARE                 = 0x0008;
-        private const int WH_DEBUG                    = 0x0009;
-        private const int WH_SHELL                    = 0x000A;
-        private const int WH_MWH_FOREGROUNDIDLEOUSE   = 0x000B;
-        private const int WH_CALLWNDPROCRET           = 0x000C;
-        private const int WH_MOUSE_LL                 = 0x000E;
-
-        private const int WM_IME_NOTIFY               = 0x0282;
-
-        // wParam of report message WM_IME_NOTIFY
-        private const int IMN_CLOSESTATUSWINDOW       =    0x0001;
-        private const int IMN_OPENSTATUSWINDOW        =    0x0002;
-        private const int IMN_CHANGECANDIDATE         =    0x0003;
-        private const int IMN_CLOSECANDIDATE          =    0x0004;
-        private const int IMN_OPENCANDIDATE           =    0x0005;
-        private const int IMN_SETCONVERSIONMODE       =    0x0006;
-        private const int IMN_SETSENTENCEMODE         =    0x0007;
-        private const int IMN_SETOPENSTATUS           =    0x0008;
-        private const int IMN_SETCANDIDATEPOS         =    0x0009;
-        private const int IMN_SETCOMPOSITIONFONT      =    0x000A;
-        private const int IMN_SETCOMPOSITIONWINDOW    =    0x000B;
-        private const int IMN_SETSTATUSWINDOWPOS      =    0x000C;
-        private const int IMN_GUIDELINE               =    0x000D;
-        private const int IMN_PRIVATE                 =    0x000E;
-
-        private static IntPtr _imeHookID = IntPtr.Zero;
-
-        private static IntPtr ImeProc(int nCode, IntPtr wParam, IntPtr lParam)
-        {
-            if (nCode >= 0 && wParam == (IntPtr)WM_IME_NOTIFY)
-            {
-                //int vkCode = Marshal.ReadInt32(lParam);
-                //if ((Keys)vkCode == Keys.Capital)
-                //{
-                //    return (IntPtr)1;
-                //}
-            }
-            return CallNextHookEx(_imeHookID, nCode, wParam, lParam);
-        }
-
-        private static HookProc _imeProc = ImeProc;
-
-        private static IntPtr SetImeHook(HookProc proc)
-        {
-            using (Process curProcess = Process.GetCurrentProcess())
-            {
-                using (ProcessModule curModule = curProcess.MainModule)
-                {                    
-                    return SetWindowsHookEx(WH_SHELL, proc, GetModuleHandle(curModule.ModuleName), (uint)curProcess.Threads[0].Id);
-                }
-            }
-        }
-        #endregion
-
         ~KeyMapper()
         {
-            if (_imeHookID != IntPtr.Zero)
-            {
-                UnhookWindowsHookEx(_imeHookID);
-            }
-
             if (_keyboardHookID != IntPtr.Zero)
             {
                 UnhookWindowsHookEx(_keyboardHookID);
@@ -278,16 +210,6 @@ namespace Caps2CtrlSpace
             {
                 ToggleCapsLock();
             }
-
-            //try
-            //{
-            //    _imeHookID = SetImeHook(_imeProc);
-            //    if (_imeHookID == IntPtr.Zero) throw new System.ComponentModel.Win32Exception();
-            //}
-            //catch(Exception ex)
-            //{
-            //    MessageBox.Show(ex.Message);
-            //}
 
             try
             {
