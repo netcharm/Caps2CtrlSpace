@@ -30,32 +30,38 @@
         {
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
-            this.labelTitle = new System.Windows.Forms.Label();
+            this.lblTitle = new System.Windows.Forms.Label();
             this.notifyIcon = new System.Windows.Forms.NotifyIcon(this.components);
             this.cmsNotifyIcon = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.tsmiShow = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripSeparator();
             this.tsmiExit = new System.Windows.Forms.ToolStripMenuItem();
-            this.chkAutoRun = new System.Windows.Forms.CheckBox();
-            this.chkCapsState = new System.Windows.Forms.CheckBox();
             this.timer = new System.Windows.Forms.Timer(this.components);
-            this.chkOnTop = new System.Windows.Forms.CheckBox();
             this.lblImeLayout = new System.Windows.Forms.Label();
+            this.lblWindowText = new System.Windows.Forms.Label();
+            this.grpOptions = new System.Windows.Forms.GroupBox();
+            this.chkOnTop = new System.Windows.Forms.CheckBox();
+            this.chkAutoCheckImeMode = new System.Windows.Forms.CheckBox();
+            this.chkCapsState = new System.Windows.Forms.CheckBox();
+            this.chkAutoRun = new System.Windows.Forms.CheckBox();
+            this.picIndicator = new System.Windows.Forms.PictureBox();
             this.cmsNotifyIcon.SuspendLayout();
+            this.grpOptions.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.picIndicator)).BeginInit();
             this.SuspendLayout();
             // 
-            // labelTitle
+            // lblTitle
             // 
-            this.labelTitle.Dock = System.Windows.Forms.DockStyle.Top;
-            this.labelTitle.Font = new System.Drawing.Font("宋体", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.labelTitle.Location = new System.Drawing.Point(0, 0);
-            this.labelTitle.Margin = new System.Windows.Forms.Padding(4);
-            this.labelTitle.Name = "labelTitle";
-            this.labelTitle.Padding = new System.Windows.Forms.Padding(4);
-            this.labelTitle.Size = new System.Drawing.Size(414, 50);
-            this.labelTitle.TabIndex = 0;
-            this.labelTitle.Text = "Convert CapsLock key to Ctrl+Space";
-            this.labelTitle.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.lblTitle.Dock = System.Windows.Forms.DockStyle.Top;
+            this.lblTitle.Font = new System.Drawing.Font("宋体", 14F);
+            this.lblTitle.Location = new System.Drawing.Point(8, 8);
+            this.lblTitle.Margin = new System.Windows.Forms.Padding(4);
+            this.lblTitle.Name = "lblTitle";
+            this.lblTitle.Padding = new System.Windows.Forms.Padding(4);
+            this.lblTitle.Size = new System.Drawing.Size(398, 50);
+            this.lblTitle.TabIndex = 0;
+            this.lblTitle.Text = "Convert CapsLock key to Ctrl+Space";
+            this.lblTitle.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // notifyIcon
             // 
@@ -94,72 +100,132 @@
             this.tsmiExit.Text = "Exit";
             this.tsmiExit.Click += new System.EventHandler(this.tsmiExit_Click);
             // 
-            // chkAutoRun
-            // 
-            this.chkAutoRun.AutoSize = true;
-            this.chkAutoRun.Location = new System.Drawing.Point(38, 56);
-            this.chkAutoRun.Margin = new System.Windows.Forms.Padding(2);
-            this.chkAutoRun.Name = "chkAutoRun";
-            this.chkAutoRun.Size = new System.Drawing.Size(270, 16);
-            this.chkAutoRun.TabIndex = 2;
-            this.chkAutoRun.Text = "Auto Run Application When Windows Startup";
-            this.chkAutoRun.UseVisualStyleBackColor = true;
-            this.chkAutoRun.CheckedChanged += new System.EventHandler(this.chkAutoRun_CheckedChanged);
-            // 
-            // chkCapsState
-            // 
-            this.chkCapsState.AutoSize = true;
-            this.chkCapsState.Location = new System.Drawing.Point(38, 78);
-            this.chkCapsState.Name = "chkCapsState";
-            this.chkCapsState.Size = new System.Drawing.Size(306, 16);
-            this.chkCapsState.TabIndex = 3;
-            this.chkCapsState.Text = "Enabled CapsLock Indicator Light (If Available)";
-            this.chkCapsState.UseVisualStyleBackColor = true;
-            this.chkCapsState.CheckedChanged += new System.EventHandler(this.chkCapsState_CheckedChanged);
-            // 
             // timer
             // 
             this.timer.Tick += new System.EventHandler(this.timer_Tick);
             // 
+            // lblImeLayout
+            // 
+            this.lblImeLayout.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.lblImeLayout.Location = new System.Drawing.Point(8, 229);
+            this.lblImeLayout.Name = "lblImeLayout";
+            this.lblImeLayout.Size = new System.Drawing.Size(398, 23);
+            this.lblImeLayout.TabIndex = 5;
+            this.lblImeLayout.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // lblWindowText
+            // 
+            this.lblWindowText.AutoEllipsis = true;
+            this.lblWindowText.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.lblWindowText.Location = new System.Drawing.Point(8, 206);
+            this.lblWindowText.Name = "lblWindowText";
+            this.lblWindowText.Size = new System.Drawing.Size(398, 23);
+            this.lblWindowText.TabIndex = 6;
+            this.lblWindowText.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // grpOptions
+            // 
+            this.grpOptions.Controls.Add(this.chkOnTop);
+            this.grpOptions.Controls.Add(this.chkAutoCheckImeMode);
+            this.grpOptions.Controls.Add(this.chkCapsState);
+            this.grpOptions.Controls.Add(this.chkAutoRun);
+            this.grpOptions.Location = new System.Drawing.Point(46, 65);
+            this.grpOptions.Margin = new System.Windows.Forms.Padding(16);
+            this.grpOptions.Name = "grpOptions";
+            this.grpOptions.Padding = new System.Windows.Forms.Padding(8);
+            this.grpOptions.Size = new System.Drawing.Size(323, 131);
+            this.grpOptions.TabIndex = 7;
+            this.grpOptions.TabStop = false;
+            this.grpOptions.Text = "Options";
+            // 
             // chkOnTop
             // 
             this.chkOnTop.AutoSize = true;
-            this.chkOnTop.Location = new System.Drawing.Point(38, 101);
+            this.chkOnTop.Dock = System.Windows.Forms.DockStyle.Top;
+            this.chkOnTop.Location = new System.Drawing.Point(8, 94);
             this.chkOnTop.Name = "chkOnTop";
-            this.chkOnTop.Size = new System.Drawing.Size(102, 16);
-            this.chkOnTop.TabIndex = 4;
+            this.chkOnTop.Padding = new System.Windows.Forms.Padding(4);
+            this.chkOnTop.Size = new System.Drawing.Size(307, 24);
+            this.chkOnTop.TabIndex = 8;
             this.chkOnTop.Text = "Always On Top";
             this.chkOnTop.UseVisualStyleBackColor = true;
             this.chkOnTop.CheckedChanged += new System.EventHandler(this.chkOnTop_CheckedChanged);
             // 
-            // lblImeLayout
+            // chkAutoCheckImeMode
             // 
-            this.lblImeLayout.Location = new System.Drawing.Point(38, 122);
-            this.lblImeLayout.Name = "lblImeLayout";
-            this.lblImeLayout.Size = new System.Drawing.Size(340, 23);
-            this.lblImeLayout.TabIndex = 5;
-            this.lblImeLayout.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.chkAutoCheckImeMode.AutoSize = true;
+            this.chkAutoCheckImeMode.Dock = System.Windows.Forms.DockStyle.Top;
+            this.chkAutoCheckImeMode.Location = new System.Drawing.Point(8, 70);
+            this.chkAutoCheckImeMode.Name = "chkAutoCheckImeMode";
+            this.chkAutoCheckImeMode.Padding = new System.Windows.Forms.Padding(4);
+            this.chkAutoCheckImeMode.Size = new System.Drawing.Size(307, 24);
+            this.chkAutoCheckImeMode.TabIndex = 7;
+            this.chkAutoCheckImeMode.Text = "Auto Check IME Mode (Will increase CPU usage)";
+            this.chkAutoCheckImeMode.UseVisualStyleBackColor = true;
+            this.chkAutoCheckImeMode.CheckedChanged += new System.EventHandler(this.chkAutoCheckImeMode_CheckedChanged);
+            // 
+            // chkCapsState
+            // 
+            this.chkCapsState.AutoSize = true;
+            this.chkCapsState.Dock = System.Windows.Forms.DockStyle.Top;
+            this.chkCapsState.Location = new System.Drawing.Point(8, 46);
+            this.chkCapsState.Name = "chkCapsState";
+            this.chkCapsState.Padding = new System.Windows.Forms.Padding(4);
+            this.chkCapsState.Size = new System.Drawing.Size(307, 24);
+            this.chkCapsState.TabIndex = 6;
+            this.chkCapsState.Text = "Enabled CapsLock Indicator Light (If Available)";
+            this.chkCapsState.UseVisualStyleBackColor = true;
+            this.chkCapsState.CheckedChanged += new System.EventHandler(this.chkCapsState_CheckedChanged);
+            // 
+            // chkAutoRun
+            // 
+            this.chkAutoRun.AutoSize = true;
+            this.chkAutoRun.Dock = System.Windows.Forms.DockStyle.Top;
+            this.chkAutoRun.Location = new System.Drawing.Point(8, 22);
+            this.chkAutoRun.Margin = new System.Windows.Forms.Padding(2);
+            this.chkAutoRun.Name = "chkAutoRun";
+            this.chkAutoRun.Padding = new System.Windows.Forms.Padding(4);
+            this.chkAutoRun.Size = new System.Drawing.Size(307, 24);
+            this.chkAutoRun.TabIndex = 5;
+            this.chkAutoRun.Text = "Auto Run Application When Windows Startup";
+            this.chkAutoRun.UseVisualStyleBackColor = true;
+            this.chkAutoRun.CheckedChanged += new System.EventHandler(this.chkAutoRun_CheckedChanged);
+            // 
+            // picIndicator
+            // 
+            this.picIndicator.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.picIndicator.Location = new System.Drawing.Point(10, 223);
+            this.picIndicator.Name = "picIndicator";
+            this.picIndicator.Size = new System.Drawing.Size(25, 26);
+            this.picIndicator.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
+            this.picIndicator.TabIndex = 8;
+            this.picIndicator.TabStop = false;
             // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
-            this.ClientSize = new System.Drawing.Size(414, 150);
+            this.ClientSize = new System.Drawing.Size(414, 260);
+            this.Controls.Add(this.picIndicator);
+            this.Controls.Add(this.grpOptions);
+            this.Controls.Add(this.lblWindowText);
             this.Controls.Add(this.lblImeLayout);
-            this.Controls.Add(this.chkOnTop);
-            this.Controls.Add(this.chkCapsState);
-            this.Controls.Add(this.chkAutoRun);
-            this.Controls.Add(this.labelTitle);
+            this.Controls.Add(this.lblTitle);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Margin = new System.Windows.Forms.Padding(2);
             this.MaximizeBox = false;
             this.Name = "MainForm";
+            this.Padding = new System.Windows.Forms.Padding(8);
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "CapsLock To Ctrl+Space";
             this.WindowState = System.Windows.Forms.FormWindowState.Minimized;
+            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.MainForm_FormClosed);
             this.Load += new System.EventHandler(this.MainForm_Load);
             this.Resize += new System.EventHandler(this.MainForm_Resize);
             this.cmsNotifyIcon.ResumeLayout(false);
+            this.grpOptions.ResumeLayout(false);
+            this.grpOptions.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.picIndicator)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -167,17 +233,21 @@
 
         #endregion
 
-        private System.Windows.Forms.Label labelTitle;
+        private System.Windows.Forms.Label lblTitle;
         private System.Windows.Forms.NotifyIcon notifyIcon;
-        private System.Windows.Forms.CheckBox chkAutoRun;
-        private System.Windows.Forms.CheckBox chkCapsState;
         private System.Windows.Forms.ContextMenuStrip cmsNotifyIcon;
         private System.Windows.Forms.ToolStripMenuItem tsmiShow;
         private System.Windows.Forms.ToolStripSeparator toolStripMenuItem1;
         private System.Windows.Forms.ToolStripMenuItem tsmiExit;
         private System.Windows.Forms.Timer timer;
-        private System.Windows.Forms.CheckBox chkOnTop;
         private System.Windows.Forms.Label lblImeLayout;
+        private System.Windows.Forms.Label lblWindowText;
+        private System.Windows.Forms.GroupBox grpOptions;
+        private System.Windows.Forms.CheckBox chkOnTop;
+        private System.Windows.Forms.CheckBox chkCapsState;
+        private System.Windows.Forms.CheckBox chkAutoCheckImeMode;
+        private System.Windows.Forms.CheckBox chkAutoRun;
+        private System.Windows.Forms.PictureBox picIndicator;
     }
 }
 

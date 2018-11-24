@@ -11,30 +11,88 @@ using System.Windows.Forms;
 using Microsoft.Win32;
 using System.Runtime.InteropServices;
 using System.Threading;
+using System.Diagnostics;
+using System.Resources;
+using Caps2CtrlSpace.Properties;
+using System.IO;
+using System.Configuration;
+using System.Reflection;
 
 namespace Caps2CtrlSpace
 {
     public partial class MainForm : Form
     {
+        private string AppPath = Path.GetDirectoryName(Application.ExecutablePath);
+        private string AppFile = Path.GetFileName(Assembly.GetEntryAssembly().EscapedCodeBase);
+
+        //private static Configuration config = ConfigurationManager.OpenExeConfiguration( Application.ExecutablePath );
+        private static Configuration config;
+        private AppSettingsSection appSection;
+
+        private bool updateConfig = false;
+
         private const string AppName = "Caps2CtrlSpace";
 
-        #region get current input window keyboard layout functions
-        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        static extern IntPtr GetForegroundWindow();
+        private void LoadConfig()
+        {
+            try
+            {
+                chkAutoRun.Checked = bool.Parse(appSection.Settings["AutoRun"].Value);
+            }
+            catch
+            {
+                appSection.Settings.Add("AutoRun", chkAutoRun.Checked.ToString());
+                updateConfig = true;
+            }
+            try
+            {
+                chkCapsState.Checked = bool.Parse(appSection.Settings["CapsState"].Value);
+            }
+            catch
+            {
+                appSection.Settings.Add("CapsState", chkCapsState.Checked.ToString());
+                updateConfig = true;
+            }
+            try
+            {
+                chkAutoCheckImeMode.Checked = bool.Parse(appSection.Settings["AutoCheckImeMode"].Value);
+            }
+            catch
+            {
+                appSection.Settings.Add("AutoCheckImeMode", chkAutoCheckImeMode.Checked.ToString());
+                updateConfig = true;
+            }
+            try
+            {
+                chkOnTop.Checked = bool.Parse(appSection.Settings["AlwaysOnTop"].Value);
+            }
+            catch
+            {
+                appSection.Settings.Add("AlwaysOnTop", chkOnTop.Checked.ToString());
+                updateConfig = true;
+            }
 
-        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        static extern IntPtr GetWindowThreadProcessId(IntPtr hWnd, IntPtr ProcessId);
+            if (updateConfig) config.Save();
+            updateConfig = false;
+        }
 
-        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        static extern IntPtr AttachThreadInput(IntPtr idAttach,
-                             IntPtr idAttachTo, bool fAttach);
-
-        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        static extern IntPtr GetFocus();
-
-        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        static extern IntPtr GetKeyboardLayout(uint thread);
-        #endregion
+        private void SaveConfig()
+        {
+            try
+            {
+                if (updateConfig)
+                {
+                    appSection.Settings["AutoRun"].Value = chkAutoRun.Checked.ToString();
+                    appSection.Settings["CapsState"].Value = chkCapsState.Checked.ToString();
+                    appSection.Settings["AutoCheckImeMode"].Value = chkAutoCheckImeMode.Checked.ToString();
+                    appSection.Settings["AlwaysOnTop"].Value = chkOnTop.Checked.ToString();
+                    config.Save();
+                }
+            }
+            catch
+            {
+            }
+        }
 
         private void SetHide(bool hide = true)
         {
@@ -75,13 +133,32 @@ namespace Caps2CtrlSpace
         {
             Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
             notifyIcon.Icon = Icon;
-            chkAutoRun.Checked = IsAutoStart();
 
-            chkOnTop.Checked = true;
-            chkCapsState.Checked = true;
+            #region i18n locale UI
+            this.Text = Resources.strTitleShort;
+            lblTitle.Text = Resources.strTitleLong;
+            grpOptions.Text = Resources.strOptions;
+            chkAutoRun.Text = Resources.strAutoRun;
+            chkCapsState.Text = Resources.strCapsState;
+            chkAutoCheckImeMode.Text = Resources.strAutoCheckImeMode;
+            chkOnTop.Text = Resources.strOnTop;
+            #endregion
+
+            config = ConfigurationManager.OpenExeConfiguration(Path.Combine(AppPath, Path.ChangeExtension(AppFile, Path.GetExtension(AppFile).ToLower())));
+            appSection = config.AppSettings;
+            LoadConfig();
+
+            //chkAutoRun.Checked = IsAutoStart();
+            //chkOnTop.Checked = true;
+            //chkCapsState.Checked = true;
 #if !DEBUG
             SetHide(true);
 #endif
+        }
+
+        private void MainForm_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            SaveConfig();
         }
 
         private void MainForm_Resize(object sender, EventArgs e)
@@ -126,6 +203,7 @@ namespace Caps2CtrlSpace
                 {
                     rk.DeleteValue(AppName);
                 }
+                updateConfig = true;
             }
             catch (Exception exception)
             {
@@ -133,65 +211,41 @@ namespace Caps2CtrlSpace
             }
         }
 
-        private void chkOnTop_CheckedChanged(object sender, EventArgs e)
-        {
-            this.TopMost = chkOnTop.Checked;
-        }
-
         private void chkCapsState_CheckedChanged(object sender, EventArgs e)
         {
             KeyMapper.CapsLockLight = chkCapsState.Checked;
             timer.Enabled = chkCapsState.Checked;
+            updateConfig = true;
         }
 
-        private Dictionary<int, string> InstalledKeyboardLayout = new Dictionary<int, string>();
-        private int lastKeyboardLayout = 1033;
-
-        private Tuple<int, int> GetFocusKeyboardLayout()
+        private void chkAutoCheckImeMode_CheckedChanged(object sender, EventArgs e)
         {
-            IntPtr activeWindowHandle = GetForegroundWindow();
-            IntPtr activeWindowThread = GetWindowThreadProcessId(activeWindowHandle, IntPtr.Zero);
-            //IntPtr thisWindowThread = GetWindowThreadProcessId(this.Handle, IntPtr.Zero);
+            updateConfig = true;
+        }
 
-            //AttachThreadInput(activeWindowThread, thisWindowThread, true);
-            //IntPtr focusedControlHandle = GetFocus();
-            var kl = GetKeyboardLayout((uint)activeWindowThread.ToInt32()).ToInt32() & 0xFFFF;
-            //AttachThreadInput(activeWindowThread, thisWindowThread, false);
-            return(new Tuple<int, int>(activeWindowHandle.ToInt32(), kl));
+        private void chkOnTop_CheckedChanged(object sender, EventArgs e)
+        {
+            this.TopMost = chkOnTop.Checked;
+            updateConfig = true;
         }
 
         private void timer_Tick(object sender, EventArgs e)
         {
             if (chkCapsState.Checked)
             {
-                //var klt = GetFocusKeyboardLayout();
-                IntPtr activeWindowHandle = GetForegroundWindow();
-                IntPtr activeWindowThread = GetWindowThreadProcessId(activeWindowHandle, IntPtr.Zero);
-                var kl = GetKeyboardLayout((uint)activeWindowThread.ToInt32()).ToInt32() & 0xFFFF;
-
-                if (InstalledKeyboardLayout.Count <= 0 || !InstalledKeyboardLayout.ContainsKey(kl))
+                KeyMapper.CurrentKeyboardLayout = (KeyboardLayout)Ime.KeyboardLayout;
+                if (chkAutoCheckImeMode.Checked)
                 {
-                    InputLanguageCollection ilc = InputLanguage.InstalledInputLanguages; //获取所有安装的输入法
-                    foreach(InputLanguage il in ilc)
-                    {
-                        InstalledKeyboardLayout.Add(il.Culture.KeyboardLayoutId, il.LayoutName);
-                    }
+                    KeyMapper.CurrentImeMode = Ime.Mode;
+                    KeyMapper.ToggleLights(KeyMapper.Locks.KeyboardCapsLockOn);
                 }
-                //InputLanguage cil = InputLanguage.CurrentInputLanguage; //获取当前UI线程的输入法以及状态
-                if (InstalledKeyboardLayout.ContainsKey(kl))
-                {
-                    if (kl != lastKeyboardLayout)
-                    {
-                        if (IsKeyLocked(Keys.CapsLock))
-                        {
-                            KeyMapper.ToggleCapsLock();
-                            //Thread.Sleep(120);
-                        }
-                        lastKeyboardLayout = kl;
-                    }
-                    lblImeLayout.Text = $"{activeWindowThread}:{kl}, {InstalledKeyboardLayout[kl]}";
-                }
-                KeyMapper.CurrentKeyboardLayout = (uint)kl;
+                else KeyMapper.CurrentImeMode = ImeIndicatorMode.Manual;
+#if DEBUG
+                Console.WriteLine($"{KeyMapper.CurrentImeMode}");
+#endif
+                lblImeLayout.Text = $"{Ime.KeyboardLayout}, {Ime.KeyboardLayoutName}";
+                lblWindowText.Text = $"{Ime.ActiveWindowTitle}[{Ime.ActiveWindowHandle.ToInt32()}]";
+                picIndicator.Image = Ime.CurrentImeIndicator;
             }
         }
 

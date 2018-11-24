@@ -21,11 +21,14 @@ namespace Caps2CtrlSpace
         public int dwExtraInfo;
     }
 
+    public enum KeyboardLayout { ENG = 1033, CHS = 2052, CHT = 1028, JAP = 1041 };
+
     public class KeyMapper
     {
         static public bool CapsLockLight { get; set; } = false;
 
-        static public uint CurrentKeyboardLayout { get; set; } = 1033;
+        static public KeyboardLayout CurrentKeyboardLayout { get; set; } = KeyboardLayout.ENG;
+        static public ImeIndicatorMode CurrentImeMode { get; set; } = ImeIndicatorMode.Disabled;
 
         private delegate IntPtr HookProc(int nCode, IntPtr wParam, IntPtr lParam);
 
@@ -117,6 +120,7 @@ namespace Caps2CtrlSpace
 
         private static uint IOCTL_KEYBOARD_SET_INDICATORS = ControlCode(FileDeviceKeyboard, 0x0002, MethodBuffered, FileAnyAccess);
         private static uint IOCTL_KEYBOARD_QUERY_INDICATORS = ControlCode(FileDeviceKeyboard, 0x0010, MethodBuffered, FileAnyAccess);
+        #endregion
 
         public static void ToggleLights(Locks locks)
         {
@@ -134,8 +138,15 @@ namespace Caps2CtrlSpace
                 var retQ = DeviceIoControl(new SafeFileHandle(hKeybd, false), (int)IOCTL_KEYBOARD_QUERY_INDICATORS, ref indicatorsOut, size, ref indicatorsOut, size, out bytesReturned, IntPtr.Zero);
                 if (retQ)
                 {
-                    if (!indicatorsOut.LedFlags.HasFlag(Locks.KeyboardCapsLockOn))
+                    if (CurrentImeMode == ImeIndicatorMode.Manual)
+                    {
+                        if (!indicatorsOut.LedFlags.HasFlag(Locks.KeyboardCapsLockOn))
+                            indicatorsIn.LedFlags |= Locks.KeyboardCapsLockOn;
+                    }
+                    else if (CurrentImeMode == ImeIndicatorMode.Locale)
+                    {
                         indicatorsIn.LedFlags |= Locks.KeyboardCapsLockOn;
+                    }
                     if (indicatorsOut.LedFlags.HasFlag(Locks.KeyboardNumLockOn))
                         indicatorsIn.LedFlags |= Locks.KeyboardNumLockOn;
                     if (indicatorsOut.LedFlags.HasFlag(Locks.KeyboardScrollLockOn))
@@ -144,28 +155,39 @@ namespace Caps2CtrlSpace
                 }
             }
         }
-        #endregion
 
         #region Keyboard event for toggle capslock state
         [DllImport("user32.dll")]
         static extern void keybd_event(byte bVk, byte bScan, uint dwFlags, UIntPtr dwExtraInfo);
+        #endregion
 
         public static void ToggleCapsLock()
         {
+            //SendKeys.SendWait("^");
             const int KEYEVENTF_EXTENDEDKEY = 0x1;
             const int KEYEVENTF_KEYUP = 0x2;
             keybd_event(0x14, 0x45, KEYEVENTF_EXTENDEDKEY, (UIntPtr)0);
             keybd_event(0x14, 0x45, KEYEVENTF_EXTENDEDKEY | KEYEVENTF_KEYUP, (UIntPtr)0);
         }
-        #endregion
 
+        public static void ToggleCtrlSpace()
+        {
+            //SendKeys.SendWait("^");
+            const int KEYEVENTF_EXTENDEDKEY = 0x1;
+            const int KEYEVENTF_KEYUP = 0x2;
+            keybd_event(0x11, 0, KEYEVENTF_EXTENDEDKEY, (UIntPtr)0);
+            keybd_event(0x20, 0, KEYEVENTF_EXTENDEDKEY, (UIntPtr)0);
+            keybd_event(0x20, 0, KEYEVENTF_EXTENDEDKEY | KEYEVENTF_KEYUP, (UIntPtr)0);
+            keybd_event(0x11, 0, KEYEVENTF_EXTENDEDKEY | KEYEVENTF_KEYUP, (UIntPtr)0);
+        }
+        
         #region Keyboard Hook
         private const int WH_KEYBOARD_LL = 13;
 
         private const int WM_KEYDOWN = 0x0100;
         private const int WM_SYSKEYDOWN = 0x0104;
 
-        private static uint[] CapsLockEnabledLayout = new uint[] { 2052, 1028, 1041 };
+        private static KeyboardLayout[] CapsLockEnabledLayout = new KeyboardLayout[] { KeyboardLayout.CHS, KeyboardLayout.CHT, KeyboardLayout.JAP };
 
         private static IntPtr _keyboardHookID = IntPtr.Zero;
 
@@ -176,17 +198,22 @@ namespace Caps2CtrlSpace
                 var kbd = (KBDLLHOOKSTRUCT)Marshal.PtrToStructure(lParam, typeof(KBDLLHOOKSTRUCT));
                 int vkCode = kbd.vkCode; //Marshal.ReadInt32(lParam);
 #if DEBUG
-                Console.WriteLine($"KeyCode: {vkCode}, {kbd.flags}");
+                Console.WriteLine($"KeyCode: {vkCode}, {kbd.flags}, {CurrentKeyboardLayout}");
 #endif
                 if (kbd.flags == 0 && (Keys)vkCode == Keys.Capital && CapsLockEnabledLayout.Contains(CurrentKeyboardLayout))
                 {
                     try
                     {
-                        if (CurrentKeyboardLayout == 2052 || CurrentKeyboardLayout == 1028)
+                        if (CurrentKeyboardLayout == KeyboardLayout.CHS)
                         {
                             SendKeys.Send("^ "); //将CapsLock转换为Ctrl+Space
-                        }                            
-                        else if (CurrentKeyboardLayout == 1041)
+                        }
+                        else if (CurrentKeyboardLayout == KeyboardLayout.CHT)
+                        {
+                            //SendKeys.Send("^ "); //将CapsLock转换为Ctrl+Space
+                            SendKeys.Send("+"); //将CapsLock转换为Shift
+                        }
+                        else if (CurrentKeyboardLayout == KeyboardLayout.JAP)
                         {
                             SendKeys.Send("+{CAPSLOCK}"); //将CapsLock转换为Shift+CapsLock
                         }
@@ -215,7 +242,7 @@ namespace Caps2CtrlSpace
                 }
             }
         }
-#endregion
+        #endregion
 
         ~KeyMapper()
         {
