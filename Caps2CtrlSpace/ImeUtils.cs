@@ -20,6 +20,45 @@ namespace Caps2CtrlSpace
         public int Bottom;
     }
 
+    enum TernaryRasterOperations : uint
+    {
+        /// <summary>dest = source</summary>
+        SRCCOPY = 0x00CC0020,
+        /// <summary>dest = source OR dest</summary>
+        SRCPAINT = 0x00EE0086,
+        /// <summary>dest = source AND dest</summary>
+        SRCAND = 0x008800C6,
+        /// <summary>dest = source XOR dest</summary>
+        SRCINVERT = 0x00660046,
+        /// <summary>dest = source AND (NOT dest)</summary>
+        SRCERASE = 0x00440328,
+        /// <summary>dest = (NOT source)</summary>
+        NOTSRCCOPY = 0x00330008,
+        /// <summary>dest = (NOT src) AND (NOT dest)</summary>
+        NOTSRCERASE = 0x001100A6,
+        /// <summary>dest = (source AND pattern)</summary>
+        MERGECOPY = 0x00C000CA,
+        /// <summary>dest = (NOT source) OR dest</summary>
+        MERGEPAINT = 0x00BB0226,
+        /// <summary>dest = pattern</summary>
+        PATCOPY = 0x00F00021,
+        /// <summary>dest = DPSnoo</summary>
+        PATPAINT = 0x00FB0A09,
+        /// <summary>dest = pattern XOR dest</summary>
+        PATINVERT = 0x005A0049,
+        /// <summary>dest = (NOT dest)</summary>
+        DSTINVERT = 0x00550009,
+        /// <summary>dest = BLACK</summary>
+        BLACKNESS = 0x00000042,
+        /// <summary>dest = WHITE</summary>
+        WHITENESS = 0x00FF0062,
+        /// <summary>
+        /// Capture window as seen on screen.  This includes layered windows
+        /// such as WPF windows with AllowsTransparency="true"
+        /// </summary>
+        CAPTUREBLT = 0x40000000
+    }
+
     public class ImeIndicator
     {
         public Bitmap English { get; set; } = null;
@@ -46,6 +85,15 @@ namespace Caps2CtrlSpace
         static extern IntPtr GetWindowThreadProcessId(IntPtr hWnd, IntPtr ProcessId);
 
         [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        static extern IntPtr AttachThreadInput(IntPtr idAttach, IntPtr idAttachTo, bool fAttach);
+
+        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        static extern IntPtr GetFocus();
+
+        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        static extern IntPtr GetKeyboardLayout(uint thread);
+
+        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
         private static extern int GetWindowText(IntPtr hWnd, StringBuilder lpString, int nMaxCount);
 
         [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
@@ -70,14 +118,9 @@ namespace Caps2CtrlSpace
         [return: MarshalAs(UnmanagedType.Bool)]
         static extern bool PrintWindow(IntPtr hwnd, IntPtr hDC, uint nFlags);
 
-        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        static extern IntPtr AttachThreadInput(IntPtr idAttach, IntPtr idAttachTo, bool fAttach);
-
-        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        static extern IntPtr GetFocus();
-
-        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        static extern IntPtr GetKeyboardLayout(uint thread);
+        [DllImport("gdi32.dll", EntryPoint = "BitBlt", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        static extern bool BitBlt([In] IntPtr hdc, int nXDest, int nYDest, int nWidth, int nHeight, [In] IntPtr hdcSrc, int nXSrc, int nYSrc, TernaryRasterOperations dwRop);
         #endregion
 
         private static Dictionary<int, string> InstalledKeyboardLayout = new Dictionary<int, string>();
@@ -192,34 +235,45 @@ namespace Caps2CtrlSpace
         {
             Bitmap result = null;
 
-            Rect rect = new Rect();
-            GetWindowRect(hWnd, out rect);
-
-            var w = rect.Right - rect.Left;
-            var h = rect.Bottom - rect.Top;
-            if (w > 0 && h > 0)
+            if (hWnd != IntPtr.Zero)
             {
-                Bitmap bmp = new Bitmap(w, h, PixelFormat.Format32bppArgb);
-                using (Graphics g = Graphics.FromImage(bmp))
+                Rect rect = new Rect();
+                GetWindowRect(hWnd, out rect);
+
+                var w = rect.Right - rect.Left;
+                var h = rect.Bottom - rect.Top;
+                if (w > 0 && h > 0)
                 {
-                    g.FillRectangle(Brushes.Transparent, new Rectangle(0, 0, bmp.Width, bmp.Height));
-                    IntPtr hdc;
-                    try
+                    Bitmap bmp = new Bitmap(w, h, PixelFormat.Format32bppArgb);
+                    using (Graphics gDst = Graphics.FromImage(bmp))
                     {
-                        hdc = g.GetHdc();
-                        bool succeeded = PrintWindow(hWnd, hdc, 0);
-                        g.ReleaseHdc(hdc);
-                        if (succeeded)
+                        using (Graphics gSrc = Graphics.FromHwnd(hWnd))
                         {
-                            //g.FillRectangle(new SolidBrush(Color.Gray), new Rectangle(Point.Empty, bmp.Size));
-                            result = ToGrayScale(bmp);
+                            IntPtr hdcSrc = IntPtr.Zero;
+                            IntPtr hdcDst = IntPtr.Zero;
+                            try
+                            {
+                                hdcSrc = gSrc.GetHdc();
+                                hdcDst = gDst.GetHdc();
+                                bool succeeded = BitBlt(hdcDst, 0, 0, w, h, hdcSrc, 0, 0, TernaryRasterOperations.SRCCOPY);
+                                //bool succeeded = PrintWindow(hWnd, hdcDst, 0);
+                                gSrc.ReleaseHdc(hdcSrc);
+                                gDst.ReleaseHdc(hdcDst);
+                                if (succeeded) result = ToGrayScale(bmp);
+                            }
+                            catch
+                            {
+                            }
+                            finally
+                            {
+                                if (hdcSrc != IntPtr.Zero) gSrc.ReleaseHdc(hdcSrc);
+                                if (hdcDst != IntPtr.Zero) gDst.ReleaseHdc(hdcSrc);
+                            }
                         }
-                    }
-                    catch
-                    {
                     }
                 }
             }
+
             return (result);
         }
 
