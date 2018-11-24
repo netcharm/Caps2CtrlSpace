@@ -17,7 +17,10 @@ maybe display negtived indicator light.
 > 1. Using snapshot the ImeModeButton window on system notification 
 area to check & compare Ime Mode in English/locale, 
 note: you must take this area image(png format) by yourself in your 
-system, and with right size, maybe 22x34
+system, and with right size, maybe `22x34`, 
+>> file name format: `{KeyborardLayoutCode}_{Mode}.png`, 
+>> 1. KeyborardLayoutCode displayed in application bottom like `2052`, 
+>> 1. Mode: 0 = English, 1 = Ime Locale, 2 = Disabled (unnecessary)
 
 # 原理
 

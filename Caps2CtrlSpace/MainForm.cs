@@ -237,7 +237,8 @@ namespace Caps2CtrlSpace
                 if (chkAutoCheckImeMode.Checked)
                 {
                     KeyMapper.CurrentImeMode = Ime.Mode;
-                    KeyMapper.ToggleLights(KeyMapper.Locks.KeyboardCapsLockOn);
+                    if(KeyMapper.CurrentImeMode != ImeIndicatorMode.Manual)
+                        KeyMapper.ToggleLights(KeyMapper.Locks.KeyboardCapsLockOn);
                 }
                 else KeyMapper.CurrentImeMode = ImeIndicatorMode.Manual;
 #if DEBUG
