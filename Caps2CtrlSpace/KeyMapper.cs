@@ -49,10 +49,10 @@ namespace Caps2CtrlSpace
 
         #region Keyboard indication light functions
         [DllImport("kernel32.dll")]
-        static extern bool DefineDosDevice(uint dwFlags, string lpDeviceName, string lpTargetPath);
+        private static extern bool DefineDosDevice(uint dwFlags, string lpDeviceName, string lpTargetPath);
 
         [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        public static extern IntPtr CreateFile(
+        private static extern IntPtr CreateFile(
              [MarshalAs(UnmanagedType.LPTStr)] string filename,
              [MarshalAs(UnmanagedType.U4)] FileAccess access,
              [MarshalAs(UnmanagedType.U4)] FileShare share,
@@ -62,7 +62,7 @@ namespace Caps2CtrlSpace
              IntPtr templateFile);
 
         [DllImport("kernel32.dll", CharSet = CharSet.Ansi, SetLastError = true)]
-        public static extern IntPtr CreateFileA(
+        private static extern IntPtr CreateFileA(
              [MarshalAs(UnmanagedType.LPStr)] string filename,
              [MarshalAs(UnmanagedType.U4)] FileAccess access,
              [MarshalAs(UnmanagedType.U4)] FileShare share,
@@ -72,7 +72,7 @@ namespace Caps2CtrlSpace
              IntPtr templateFile);
 
         [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
-        public static extern IntPtr CreateFileW(
+        private static extern IntPtr CreateFileW(
              [MarshalAs(UnmanagedType.LPWStr)] string filename,
              [MarshalAs(UnmanagedType.U4)] FileAccess access,
              [MarshalAs(UnmanagedType.U4)] FileShare share,
@@ -82,7 +82,7 @@ namespace Caps2CtrlSpace
              IntPtr templateFile);
 
         [DllImport("Kernel32.dll", ExactSpelling = true, CharSet = CharSet.Auto, SetLastError = true)]
-        public static extern bool DeviceIoControl(
+        private static extern bool DeviceIoControl(
             SafeFileHandle hDevice,
             int IoControlCode,
             ref KeyboardIndicatorParameters InBuffer,
@@ -158,7 +158,7 @@ namespace Caps2CtrlSpace
 
         #region Keyboard event for toggle capslock state
         [DllImport("user32.dll")]
-        static extern void keybd_event(byte bVk, byte bScan, uint dwFlags, UIntPtr dwExtraInfo);
+        private static extern void keybd_event(byte bVk, byte bScan, uint dwFlags, UIntPtr dwExtraInfo);
         #endregion
 
         public static void ToggleCapsLock()
@@ -210,6 +210,8 @@ namespace Caps2CtrlSpace
                         }
                         else if (CurrentKeyboardLayout == KeyboardLayout.CHT)
                         {
+                            if(CurrentImeMode == ImeIndicatorMode.Disabled || CurrentImeMode == ImeIndicatorMode.Manual)
+                                SendKeys.Send("^ ");
                             //SendKeys.Send("^ "); //将CapsLock转换为Ctrl+Space
                             SendKeys.Send("+"); //将CapsLock转换为Shift
                         }

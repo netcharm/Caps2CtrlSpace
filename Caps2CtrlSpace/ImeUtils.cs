@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -61,12 +62,14 @@ namespace Caps2CtrlSpace
 
     public class ImeIndicator
     {
+        public Bitmap Layout { get; set; } = null;
         public Bitmap English { get; set; } = null;
         public Bitmap Locale { get; set; } = null;
         public Bitmap Disabled { get; set; } = null;
+        public Bitmap Manual { get; set; } = null;
     }
 
-    public enum ImeIndicatorMode { Manual, English, Locale, Disabled };
+    public enum ImeIndicatorMode { Layout=0, English, Locale, Disabled, Manual };
 
     class Ime
     {
@@ -79,19 +82,22 @@ namespace Caps2CtrlSpace
         private static extern bool EnumWindows(EnumWindowsProc enumFunc, int lParam);
 
         [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        static extern IntPtr GetForegroundWindow();
+        private static extern IntPtr GetForegroundWindow();
 
         [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        static extern IntPtr GetWindowThreadProcessId(IntPtr hWnd, IntPtr ProcessId);
+        private static extern IntPtr GetWindowThreadProcessId(IntPtr hWnd, IntPtr ProcessId);
 
         [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        static extern IntPtr AttachThreadInput(IntPtr idAttach, IntPtr idAttachTo, bool fAttach);
+        private static extern IntPtr AttachThreadInput(IntPtr idAttach, IntPtr idAttachTo, bool fAttach);
 
         [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        static extern IntPtr GetFocus();
+        private static extern IntPtr GetFocus();
 
         [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        static extern IntPtr GetKeyboardLayout(uint thread);
+        private static extern IntPtr GetKeyboardLayout(uint thread);
+
+        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        private static extern long GetKeyboardLayoutName(StringBuilder pwszKLID);
 
         [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
         private static extern int GetWindowText(IntPtr hWnd, StringBuilder lpString, int nMaxCount);
@@ -116,12 +122,14 @@ namespace Caps2CtrlSpace
 
         [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
-        static extern bool PrintWindow(IntPtr hwnd, IntPtr hDC, uint nFlags);
+        private static extern bool PrintWindow(IntPtr hwnd, IntPtr hDC, uint nFlags);
 
         [DllImport("gdi32.dll", EntryPoint = "BitBlt", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
-        static extern bool BitBlt([In] IntPtr hdc, int nXDest, int nYDest, int nWidth, int nHeight, [In] IntPtr hdcSrc, int nXSrc, int nYSrc, TernaryRasterOperations dwRop);
+        private static extern bool BitBlt([In] IntPtr hdc, int nXDest, int nYDest, int nWidth, int nHeight, [In] IntPtr hdcSrc, int nXSrc, int nYSrc, TernaryRasterOperations dwRop);
         #endregion
+
+        private const int KL_NAMELENGTH = 9;
 
         private static Dictionary<int, string> InstalledKeyboardLayout = new Dictionary<int, string>();
         private static int lastKeyboardLayout = (int)Caps2CtrlSpace.KeyboardLayout.ENG;
@@ -140,8 +148,9 @@ namespace Caps2CtrlSpace
             return (new Tuple<int, int>(focusedControlHandle.ToInt32(), kl));
         }
 
-        private static Dictionary<string, ImeIndicator> ImeIndicators = new Dictionary<string, ImeIndicator>();
-        public static Bitmap CurrentImeIndicator { get; set; } = null;
+        private static Dictionary<int, ImeIndicator> ImeIndicators = new Dictionary<int, ImeIndicator>();
+        public static Bitmap CurrentImeModeBitmap { get; set; } = null;
+        public static Bitmap CurrentInputIndicatorBitmap { get; set; } = null;
 
         public static int KeyboardLayout
         {
@@ -150,6 +159,7 @@ namespace Caps2CtrlSpace
                 return (GetKeyboardLayout());
             }
         }
+
         public static string KeyboardLayoutName
         {
             get
@@ -157,9 +167,19 @@ namespace Caps2CtrlSpace
                 if (InstalledKeyboardLayout.ContainsKey(lastKeyboardLayout))
                     return (InstalledKeyboardLayout[lastKeyboardLayout]);
                 else
-                    return string.Empty;
+                {
+                    var kl = GetConsoleKeyboardLayout();
+                    string klv = string.Empty;
+                    if (InstalledKeyboardLayout.ContainsKey(kl))
+                    {
+                        klv = InstalledKeyboardLayout[kl];
+                        lastKeyboardLayout = kl;
+                    }
+                    return (klv);
+                }
             }
         }
+
         public static ImeIndicatorMode Mode
         {
             get
@@ -205,6 +225,35 @@ namespace Caps2CtrlSpace
             }
 
             return (result);
+        }
+
+        public static IntPtr GetInputIndicatorButtonHandle()
+        {
+            IntPtr result = IntPtr.Zero;
+
+            IntPtr hWnd = FindWindow("Shell_TrayWnd", null);
+            if (hWnd != IntPtr.Zero)
+            {
+                IntPtr hTray = FindWindowEx(hWnd, IntPtr.Zero, "TrayNotifyWnd", null);
+                if (hTray != IntPtr.Zero)
+                {
+                    IntPtr hInput = FindWindowEx(hTray, IntPtr.Zero, "TrayInputIndicatorWClass", null);
+                    if (hInput != IntPtr.Zero)
+                    {
+                        IntPtr hIme = FindWindowEx(hInput, IntPtr.Zero, "InputIndicatorButton", null);
+                        result = hIme;
+                    }
+                }
+            }
+
+            return (result);
+        }
+
+        public static Bitmap ToBW(Bitmap Bmp)
+        {
+            if (Bmp is Bitmap)
+                return (Bmp.Clone(new Rectangle(0, 0, Bmp.Width, Bmp.Height), PixelFormat.Format1bppIndexed));
+            else return null;
         }
 
         public static Bitmap ToGrayScale(Bitmap Bmp)
@@ -284,20 +333,32 @@ namespace Caps2CtrlSpace
             return(img);
         }
 
+        public static Bitmap GetInputIndicatorBitmap()
+        {
+            var hWnd = GetInputIndicatorButtonHandle();
+            var img = GetSanpshot(hWnd);
+            return (img);
+        }
+
         public static Bitmap LoadBitmap(string bitmapFile)
         {
             Bitmap result = null;
             if (File.Exists(bitmapFile))
             {
-                using (var ms = new FileStream(bitmapFile, FileMode.Open, FileAccess.Read, FileShare.Read))
+                using (var fs = new FileStream(bitmapFile, FileMode.Open, FileAccess.Read, FileShare.Read))
                 {
-                    result = (Bitmap)Image.FromStream(ms);
+                    var bmp = Image.FromStream(fs);
+                    result = new Bitmap(bmp.Width, bmp.Height, PixelFormat.Format32bppArgb);
+                    using (Graphics g = Graphics.FromImage(result))
+                    {
+                        g.DrawImage(bmp, 0, 0);
+                    }
                 }
             }
             return (result);
         }
 
-        public static bool CompareBitmap(Bitmap src, Bitmap dst)
+        public static bool CompareBitmap(Bitmap src, Bitmap dst, double tolerance=0.1)
         {
             bool result = false;
 
@@ -308,8 +369,12 @@ namespace Caps2CtrlSpace
                     //result = true;
                     int count = 0;
 
-                    var bSrc = ToGrayScale(src);
-                    var bDst = ToGrayScale(dst);
+                    //var bSrc = ToGrayScale(src);
+                    //var bDst = ToGrayScale(dst);
+
+                    var bSrc = ToBW(src);
+                    //var bDst = ToBW(dst);
+                    var bDst = dst;
 
                     Color cSrc, cDst;
 
@@ -328,47 +393,104 @@ namespace Caps2CtrlSpace
                             }
                         }
                     }
-                    if ((double)count / (src.Width * src.Height) < 0.1) result = true;
+                    if ((double)count / (src.Width * src.Height) < tolerance) result = true;
                 }
             }
             return (result);
+        }
+
+        private static void InitImeIndicatorsList()
+        {
+            InputLanguageCollection ilc = InputLanguage.InstalledInputLanguages; //获取所有安装的输入法
+            foreach (InputLanguage il in ilc)
+            {
+                var ckl = il.Culture.KeyboardLayoutId;
+                if (!InstalledKeyboardLayout.ContainsKey(ckl))
+                    InstalledKeyboardLayout.Add(ckl, il.LayoutName);
+
+                if (!ImeIndicators.ContainsKey(ckl))
+                {
+                    ImeIndicators[ckl] = new ImeIndicator();
+                    ImeIndicators[ckl].Layout = ToBW(LoadBitmap(Path.Combine(AppPath, $"{ckl}_{(int)ImeIndicatorMode.Layout}.png")));
+                    ImeIndicators[ckl].English = ToBW(LoadBitmap(Path.Combine(AppPath, $"{ckl}_{(int)ImeIndicatorMode.English}.png")));
+                    ImeIndicators[ckl].Locale = ToBW(LoadBitmap(Path.Combine(AppPath, $"{ckl}_{(int)ImeIndicatorMode.Locale}.png")));
+                    ImeIndicators[ckl].Disabled = ToBW(LoadBitmap(Path.Combine(AppPath, $"{ckl}_{(int)ImeIndicatorMode.Disabled}.png")));
+                    ImeIndicators[ckl].Manual = ToBW(LoadBitmap(Path.Combine(AppPath, $"{ckl}_{(int)ImeIndicatorMode.Manual}.png")));
+                }
+            }
+        }
+
+        private static int GetConsoleKeyboardLayout()
+        {
+            int kl = 0;
+
+            if (InstalledKeyboardLayout.Count <= 0)
+            {
+                InitImeIndicatorsList();
+            }
+
+            CurrentInputIndicatorBitmap = GetInputIndicatorBitmap();
+            if (CurrentInputIndicatorBitmap is Bitmap)
+            {
+                InputLanguageCollection ilc = InputLanguage.InstalledInputLanguages; //获取所有安装的输入法
+                foreach (InputLanguage il in ilc)
+                {
+                    var ckl = il.Culture.KeyboardLayoutId;
+                    if (ImeIndicators.ContainsKey(ckl) && ImeIndicators[ckl].Layout is Bitmap)
+                    {
+                        if (CompareBitmap(CurrentInputIndicatorBitmap, ImeIndicators[ckl].Layout, 0.01))
+                        {
+                            kl = ckl;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            return (kl);
         }
 
         private static int GetKeyboardLayout()
         {
             int result = 0;
 
+            if (InstalledKeyboardLayout.Count <= 0)
+            {
+                InitImeIndicatorsList();
+            }
+
             //var klt = GetFocusKeyboardLayout();
             IntPtr activeWindowHandle = GetForegroundWindow();
             IntPtr activeWindowThread = GetWindowThreadProcessId(activeWindowHandle, IntPtr.Zero);
             var kl = GetKeyboardLayout((uint)activeWindowThread.ToInt32()).ToInt32() & 0xFFFF;
 
-            if (InstalledKeyboardLayout.Count <= 0 || !InstalledKeyboardLayout.ContainsKey(kl))
+            if (kl >= 0)
             {
-                InputLanguageCollection ilc = InputLanguage.InstalledInputLanguages; //获取所有安装的输入法
-                foreach (InputLanguage il in ilc)
-                {
-                    InstalledKeyboardLayout.Add(il.Culture.KeyboardLayoutId, il.LayoutName);
-                }
-            }
-            //InputLanguage cil = InputLanguage.CurrentInputLanguage; //获取当前UI线程的输入法以及状态
-            if (InstalledKeyboardLayout.ContainsKey(kl))
-            {
-                //if (kl != lastKeyboardLayout)
-                {
-                    if (Control.IsKeyLocked(Keys.CapsLock))
-                    {
-                        KeyMapper.ToggleCapsLock();
-                    }
+                var klo = kl;
+                if (kl == 0)
+                    kl = GetConsoleKeyboardLayout();
 
-                    if (lastWindowHandle == activeWindowHandle.ToInt32() && kl == (int)Caps2CtrlSpace.KeyboardLayout.CHT)
-                    {
-                        //KeyMapper.ToggleCtrlSpace();
-                    }
-                    result = kl;
-                    lastKeyboardLayout = kl;
-                    ActiveWindowHandle = activeWindowHandle;
+#if DEBUG
+                Console.WriteLine($"{activeWindowHandle}:{activeWindowThread}, - {klo} : {kl}");
+#endif
+
+                if (InstalledKeyboardLayout.Count <= 0)
+                {
+                    InitImeIndicatorsList();
                 }
+
+                if (Control.IsKeyLocked(Keys.CapsLock))
+                {
+                    KeyMapper.ToggleCapsLock();
+                }
+
+                if (lastWindowHandle == activeWindowHandle.ToInt32() && kl == (int)Caps2CtrlSpace.KeyboardLayout.CHT)
+                {
+                    //KeyMapper.ToggleCtrlSpace();
+                }
+                result = kl;
+                lastKeyboardLayout = kl;
+                ActiveWindowHandle = activeWindowHandle;
             }
             return (result);
         }
@@ -377,23 +499,25 @@ namespace Caps2CtrlSpace
         {
             ImeIndicatorMode result = ImeIndicatorMode.Manual;
 
-            if (!ImeIndicators.ContainsKey($"{KeyboardLayout}"))
+            if (lastKeyboardLayout == 0)
             {
-                ImeIndicators[$"{KeyboardLayout}"] = new ImeIndicator();
-                ImeIndicators[$"{KeyboardLayout}"].English = LoadBitmap(Path.Combine(AppPath, $"{KeyboardLayout}_0.png"));
-                ImeIndicators[$"{KeyboardLayout}"].Locale = LoadBitmap(Path.Combine(AppPath, $"{KeyboardLayout}_1.png"));
-                ImeIndicators[$"{KeyboardLayout}"].Disabled = LoadBitmap(Path.Combine(AppPath, $"{KeyboardLayout}_2.png"));
+                lastKeyboardLayout = GetConsoleKeyboardLayout();
             }
 
-            //if(ImeIndicators[$"{KeyboardLayout}"].Locale is Bitmap && ImeIndicators[$"{KeyboardLayout}"].English is Bitmap)
-            if (ImeIndicators[$"{KeyboardLayout}"].Locale is Bitmap)
+            CurrentInputIndicatorBitmap = GetInputIndicatorBitmap();
+            CurrentImeModeBitmap = GetImeModeBitmap();
+
+            //var kl = lastKeyboardLayout;
+            var kl = KeyboardLayout;
+            if (ImeIndicators.ContainsKey(kl) && ImeIndicators[kl].Locale is Bitmap)
             {
-                CurrentImeIndicator = GetImeModeBitmap();
-                if (CompareBitmap(CurrentImeIndicator, ImeIndicators[$"{KeyboardLayout}"].Locale))
+                if (CompareBitmap(CurrentImeModeBitmap, ImeIndicators[kl].Manual))
+                    result = ImeIndicatorMode.Manual;
+                else if (CompareBitmap(CurrentImeModeBitmap, ImeIndicators[kl].Locale))
                     result = ImeIndicatorMode.Locale;
-                else if (CompareBitmap(CurrentImeIndicator, ImeIndicators[$"{KeyboardLayout}"].English))
+                else if (CompareBitmap(CurrentImeModeBitmap, ImeIndicators[kl].English))
                     result = ImeIndicatorMode.English;
-                else if (CompareBitmap(CurrentImeIndicator, ImeIndicators[$"{KeyboardLayout}"].Disabled))
+                else if (CompareBitmap(CurrentImeModeBitmap, ImeIndicators[kl].Disabled))
                     result = ImeIndicatorMode.Disabled;
             }
 
