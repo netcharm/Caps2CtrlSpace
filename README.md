@@ -3,13 +3,21 @@
 CapsLock 切换输入法中英文
 
 > Modified by netcharm
-> 1. Add CapsLock Indicator Light option, but can not auto detect IME State with current input focus, 
-so need you start with eng-input state, then the light maybe turn-on when press capslock to chinese input. 
+> 1. Add CapsLock Indicator Light option, but can not auto detect IME 
+State with current input focus, so need you start with eng-input state, 
+then the light maybe turn-on when press capslock to chinese input. 
 > 1. Change application's icon.
-> 1. Add Always on Top option, note: this option is not saved, so next startup, is re-enabled.
+> 1. Add Always on Top option, note: this option is not saved, so next 
+startup, is re-enabled.
 > 1. Add contextmenu to notify tray icon for show window, exit app.
-> 1. Add Timer to auto switch CapsLock Indicator light with keyboard layout switch, but has buggy, when you change
-input state after switch to other keyboard layout and switch back, it maybe display negtived indicator light.
+> 1. Add Timer to auto switch CapsLock Indicator light with keyboard 
+layout switch, but has buggy, when you change
+input state after switch to other keyboard layout and switch back, it 
+maybe display negtived indicator light.
+> 1. Using snapshot the ImeModeButton window on system notification 
+area to check & compare Ime Mode in English/locale, 
+note: you must take this area image(png format) by yourself in your 
+system, and with right size, maybe 22x34
 
 # 原理
 
