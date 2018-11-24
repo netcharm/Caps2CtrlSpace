@@ -106,6 +106,51 @@ namespace Caps2CtrlSpace.Properties {
         }
         
         /// <summary>
+        ///   查找类似 Save As Input Disabled Icon 的本地化字符串。
+        /// </summary>
+        internal static string strSaveAsImeModeDisabled {
+            get {
+                return ResourceManager.GetString("strSaveAsImeModeDisabled", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Save As Input English Icon 的本地化字符串。
+        /// </summary>
+        internal static string strSaveAsImeModeEnglish {
+            get {
+                return ResourceManager.GetString("strSaveAsImeModeEnglish", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Save As Input Locale Icon 的本地化字符串。
+        /// </summary>
+        internal static string strSaveAsImeModeLocale {
+            get {
+                return ResourceManager.GetString("strSaveAsImeModeLocale", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Save As Input Manual Icon 的本地化字符串。
+        /// </summary>
+        internal static string strSaveAsImeModeManual {
+            get {
+                return ResourceManager.GetString("strSaveAsImeModeManual", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Save As Input Layout Indicator Icon 的本地化字符串。
+        /// </summary>
+        internal static string strSaveAsInputIndicator {
+            get {
+                return ResourceManager.GetString("strSaveAsInputIndicator", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 Convert CapsLock key to Ctrl+Space 的本地化字符串。
         /// </summary>
         internal static string strTitleLong {

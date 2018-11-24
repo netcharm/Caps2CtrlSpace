@@ -34,7 +34,7 @@
             this.notifyIcon = new System.Windows.Forms.NotifyIcon(this.components);
             this.cmsNotifyIcon = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.tsmiShow = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripSeparator();
+            this.tsmiSepExit = new System.Windows.Forms.ToolStripSeparator();
             this.tsmiExit = new System.Windows.Forms.ToolStripMenuItem();
             this.timer = new System.Windows.Forms.Timer(this.components);
             this.lblImeLayout = new System.Windows.Forms.Label();
@@ -44,10 +44,20 @@
             this.chkAutoCheckImeMode = new System.Windows.Forms.CheckBox();
             this.chkCapsState = new System.Windows.Forms.CheckBox();
             this.chkAutoRun = new System.Windows.Forms.CheckBox();
-            this.picIndicator = new System.Windows.Forms.PictureBox();
+            this.picImeMode = new System.Windows.Forms.PictureBox();
+            this.cmsImeMode = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.tsmiImeModeEnglish = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiImeModeLocale = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiImeModeDisabled = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiImeModeManual = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiSepInputIndicator = new System.Windows.Forms.ToolStripSeparator();
+            this.tsmiInputIndicator = new System.Windows.Forms.ToolStripMenuItem();
+            this.picInputIndicator = new System.Windows.Forms.PictureBox();
             this.cmsNotifyIcon.SuspendLayout();
             this.grpOptions.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.picIndicator)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.picImeMode)).BeginInit();
+            this.cmsImeMode.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.picInputIndicator)).BeginInit();
             this.SuspendLayout();
             // 
             // lblTitle
@@ -75,7 +85,7 @@
             // 
             this.cmsNotifyIcon.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.tsmiShow,
-            this.toolStripMenuItem1,
+            this.tsmiSepExit,
             this.tsmiExit});
             this.cmsNotifyIcon.Name = "cmsNotifyIcon";
             this.cmsNotifyIcon.ShowImageMargin = false;
@@ -88,10 +98,10 @@
             this.tsmiShow.Text = "Show Window";
             this.tsmiShow.Click += new System.EventHandler(this.tsmiShow_Click);
             // 
-            // toolStripMenuItem1
+            // tsmiSepExit
             // 
-            this.toolStripMenuItem1.Name = "toolStripMenuItem1";
-            this.toolStripMenuItem1.Size = new System.Drawing.Size(130, 6);
+            this.tsmiSepExit.Name = "tsmiSepExit";
+            this.tsmiSepExit.Size = new System.Drawing.Size(130, 6);
             // 
             // tsmiExit
             // 
@@ -107,9 +117,10 @@
             // lblImeLayout
             // 
             this.lblImeLayout.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.lblImeLayout.Location = new System.Drawing.Point(8, 229);
+            this.lblImeLayout.Location = new System.Drawing.Point(8, 231);
             this.lblImeLayout.Name = "lblImeLayout";
-            this.lblImeLayout.Size = new System.Drawing.Size(398, 23);
+            this.lblImeLayout.Padding = new System.Windows.Forms.Padding(0, 4, 0, 0);
+            this.lblImeLayout.Size = new System.Drawing.Size(398, 31);
             this.lblImeLayout.TabIndex = 5;
             this.lblImeLayout.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
@@ -117,9 +128,11 @@
             // 
             this.lblWindowText.AutoEllipsis = true;
             this.lblWindowText.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.lblWindowText.Location = new System.Drawing.Point(8, 206);
+            this.lblWindowText.Location = new System.Drawing.Point(8, 200);
+            this.lblWindowText.Margin = new System.Windows.Forms.Padding(3, 0, 3, 4);
             this.lblWindowText.Name = "lblWindowText";
-            this.lblWindowText.Size = new System.Drawing.Size(398, 23);
+            this.lblWindowText.Padding = new System.Windows.Forms.Padding(0, 0, 0, 4);
+            this.lblWindowText.Size = new System.Drawing.Size(398, 31);
             this.lblWindowText.TabIndex = 6;
             this.lblWindowText.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
@@ -191,41 +204,108 @@
             this.chkAutoRun.UseVisualStyleBackColor = true;
             this.chkAutoRun.CheckedChanged += new System.EventHandler(this.chkAutoRun_CheckedChanged);
             // 
-            // picIndicator
+            // picImeMode
             // 
-            this.picIndicator.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.picIndicator.Location = new System.Drawing.Point(10, 223);
-            this.picIndicator.Name = "picIndicator";
-            this.picIndicator.Size = new System.Drawing.Size(25, 26);
-            this.picIndicator.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
-            this.picIndicator.TabIndex = 8;
-            this.picIndicator.TabStop = false;
+            this.picImeMode.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.picImeMode.ContextMenuStrip = this.cmsImeMode;
+            this.picImeMode.Location = new System.Drawing.Point(10, 233);
+            this.picImeMode.Name = "picImeMode";
+            this.picImeMode.Size = new System.Drawing.Size(25, 26);
+            this.picImeMode.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
+            this.picImeMode.TabIndex = 8;
+            this.picImeMode.TabStop = false;
+            // 
+            // cmsImeMode
+            // 
+            this.cmsImeMode.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.tsmiImeModeEnglish,
+            this.tsmiImeModeLocale,
+            this.tsmiImeModeDisabled,
+            this.tsmiImeModeManual,
+            this.tsmiSepInputIndicator,
+            this.tsmiInputIndicator});
+            this.cmsImeMode.Name = "cmsImeMode";
+            this.cmsImeMode.Size = new System.Drawing.Size(241, 120);
+            // 
+            // tsmiImeModeEnglish
+            // 
+            this.tsmiImeModeEnglish.Name = "tsmiImeModeEnglish";
+            this.tsmiImeModeEnglish.Size = new System.Drawing.Size(240, 22);
+            this.tsmiImeModeEnglish.Text = "Save As English Icon";
+            this.tsmiImeModeEnglish.Click += new System.EventHandler(this.tsmiImeState_Click);
+            // 
+            // tsmiImeModeLocale
+            // 
+            this.tsmiImeModeLocale.Name = "tsmiImeModeLocale";
+            this.tsmiImeModeLocale.Size = new System.Drawing.Size(240, 22);
+            this.tsmiImeModeLocale.Text = "Save As Locale Icon";
+            this.tsmiImeModeLocale.Click += new System.EventHandler(this.tsmiImeState_Click);
+            // 
+            // tsmiImeModeDisabled
+            // 
+            this.tsmiImeModeDisabled.Name = "tsmiImeModeDisabled";
+            this.tsmiImeModeDisabled.Size = new System.Drawing.Size(240, 22);
+            this.tsmiImeModeDisabled.Text = "Save As Disabled Icon";
+            this.tsmiImeModeDisabled.Click += new System.EventHandler(this.tsmiImeState_Click);
+            // 
+            // tsmiImeModeManual
+            // 
+            this.tsmiImeModeManual.Name = "tsmiImeModeManual";
+            this.tsmiImeModeManual.Size = new System.Drawing.Size(240, 22);
+            this.tsmiImeModeManual.Text = "Save As Manual Icon";
+            this.tsmiImeModeManual.Click += new System.EventHandler(this.tsmiImeState_Click);
+            // 
+            // tsmiSepInputIndicator
+            // 
+            this.tsmiSepInputIndicator.Name = "tsmiSepInputIndicator";
+            this.tsmiSepInputIndicator.Size = new System.Drawing.Size(237, 6);
+            // 
+            // tsmiInputIndicator
+            // 
+            this.tsmiInputIndicator.Name = "tsmiInputIndicator";
+            this.tsmiInputIndicator.Size = new System.Drawing.Size(240, 22);
+            this.tsmiInputIndicator.Text = "Save As Input Indicator Icon";
+            this.tsmiInputIndicator.Click += new System.EventHandler(this.tsmiImeState_Click);
+            // 
+            // picInputIndicator
+            // 
+            this.picInputIndicator.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.picInputIndicator.ContextMenuStrip = this.cmsImeMode;
+            this.picInputIndicator.Location = new System.Drawing.Point(378, 233);
+            this.picInputIndicator.Name = "picInputIndicator";
+            this.picInputIndicator.Size = new System.Drawing.Size(25, 26);
+            this.picInputIndicator.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
+            this.picInputIndicator.TabIndex = 9;
+            this.picInputIndicator.TabStop = false;
             // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
-            this.ClientSize = new System.Drawing.Size(414, 260);
-            this.Controls.Add(this.picIndicator);
+            this.ClientSize = new System.Drawing.Size(414, 270);
+            this.Controls.Add(this.picInputIndicator);
+            this.Controls.Add(this.picImeMode);
             this.Controls.Add(this.grpOptions);
             this.Controls.Add(this.lblWindowText);
             this.Controls.Add(this.lblImeLayout);
             this.Controls.Add(this.lblTitle);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+            this.KeyPreview = true;
             this.Margin = new System.Windows.Forms.Padding(2);
             this.MaximizeBox = false;
             this.Name = "MainForm";
             this.Padding = new System.Windows.Forms.Padding(8);
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "CapsLock To Ctrl+Space";
-            this.WindowState = System.Windows.Forms.FormWindowState.Minimized;
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.MainForm_FormClosed);
             this.Load += new System.EventHandler(this.MainForm_Load);
             this.Resize += new System.EventHandler(this.MainForm_Resize);
             this.cmsNotifyIcon.ResumeLayout(false);
             this.grpOptions.ResumeLayout(false);
             this.grpOptions.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.picIndicator)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.picImeMode)).EndInit();
+            this.cmsImeMode.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.picInputIndicator)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -237,7 +317,7 @@
         private System.Windows.Forms.NotifyIcon notifyIcon;
         private System.Windows.Forms.ContextMenuStrip cmsNotifyIcon;
         private System.Windows.Forms.ToolStripMenuItem tsmiShow;
-        private System.Windows.Forms.ToolStripSeparator toolStripMenuItem1;
+        private System.Windows.Forms.ToolStripSeparator tsmiSepExit;
         private System.Windows.Forms.ToolStripMenuItem tsmiExit;
         private System.Windows.Forms.Timer timer;
         private System.Windows.Forms.Label lblImeLayout;
@@ -247,7 +327,15 @@
         private System.Windows.Forms.CheckBox chkCapsState;
         private System.Windows.Forms.CheckBox chkAutoCheckImeMode;
         private System.Windows.Forms.CheckBox chkAutoRun;
-        private System.Windows.Forms.PictureBox picIndicator;
+        private System.Windows.Forms.PictureBox picImeMode;
+        private System.Windows.Forms.PictureBox picInputIndicator;
+        private System.Windows.Forms.ContextMenuStrip cmsImeMode;
+        private System.Windows.Forms.ToolStripMenuItem tsmiImeModeManual;
+        private System.Windows.Forms.ToolStripMenuItem tsmiImeModeEnglish;
+        private System.Windows.Forms.ToolStripMenuItem tsmiImeModeLocale;
+        private System.Windows.Forms.ToolStripMenuItem tsmiImeModeDisabled;
+        private System.Windows.Forms.ToolStripSeparator tsmiSepInputIndicator;
+        private System.Windows.Forms.ToolStripMenuItem tsmiInputIndicator;
     }
 }
 

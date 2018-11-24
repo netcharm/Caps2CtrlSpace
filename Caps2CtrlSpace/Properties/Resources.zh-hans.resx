@@ -118,10 +118,10 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="strTitleLong" xml:space="preserve">
-    <value>使用Capslock大写锁定键代替Ctrl+Space</value>
+    <value>使用Capslock大写锁定键等效Ctrl+Space</value>
   </data>
   <data name="strTitleShort" xml:space="preserve">
-    <value>大写锁定键代替Ctrl+Space</value>
+    <value>大写锁定键等效Ctrl+Space</value>
   </data>
   <data name="strAutoRun" xml:space="preserve">
     <value>跟随系统启动自动运行</value>
@@ -137,5 +137,20 @@
   </data>
   <data name="strAutoCheckImeMode" xml:space="preserve">
     <value>自动检查输入法模式 (会增加 CPU 占用率)</value>
+  </data>
+  <data name="strSaveAsImeModeDisabled" xml:space="preserve">
+    <value>保存为禁止输入图像</value>
+  </data>
+  <data name="strSaveAsImeModeEnglish" xml:space="preserve">
+    <value>保存为英文输入图像</value>
+  </data>
+  <data name="strSaveAsImeModeLocale" xml:space="preserve">
+    <value>保存为本地输入图像</value>
+  </data>
+  <data name="strSaveAsImeModeManual" xml:space="preserve">
+    <value>保存为手动开启图像</value>
+  </data>
+  <data name="strSaveAsInputIndicator" xml:space="preserve">
+    <value>保存为键盘布局图像</value>
   </data>
 </root>

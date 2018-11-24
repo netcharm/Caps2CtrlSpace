@@ -20,7 +20,14 @@ note: you must take this area image(png format) by yourself in your
 system, and with right size, maybe `22x34`, 
 >> file name format: `{KeyborardLayoutCode}_{Mode}.png`, 
 >> 1. KeyborardLayoutCode displayed in application bottom like `2052`, 
->> 1. Mode: 0 = English, 1 = Ime Locale, 2 = Disabled (unnecessary)
+>> 1. Mode: 
+>>   1. `0` = Layout
+>>   1. `1` = English
+>>   1. `2` = Ime Locale
+>>   1. `3` = Disabled (maybe unnecessary) 
+>>   1. `4` = Manual (maybe unnecessary)
+> 1. Auto Save Keyboard Layout Mode & Layout Indicator Image
+
 
 # 原理
 
@@ -38,9 +45,9 @@ system, and with right size, maybe `22x34`,
 
 ## Mine Binary
 
-1. [Github](https://github.com/netcharm/Caps2CtrlSpace/blob/master/Caps2CtrlSpace.exe)
-1. [Bitbucket](https://bitbucket.org/netcharm/caps2ctrlspace/downloads)
-1. [Bitbucket](https://bitbucket.org/netcharm/caps2ctrlspace/src/master/Caps2CtrlSpace.exe)
+1. [Bitbucket 7z package](https://bitbucket.org/netcharm/caps2ctrlspace/downloads) (Preferred)
+1. [Bitbucket exe only](https://bitbucket.org/netcharm/caps2ctrlspace/src/master/Caps2CtrlSpace.exe)
+1. [Github exe only](https://github.com/netcharm/Caps2CtrlSpace/blob/master/Caps2CtrlSpace.exe)
 
 ## Original Binary
 

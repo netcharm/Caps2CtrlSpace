@@ -96,13 +96,15 @@ namespace Caps2CtrlSpace
 
         private void SetHide(bool hide = true)
         {
-            this.ShowInTaskbar = true;
             if (hide)
             {
+                this.ShowInTaskbar = false;
+                this.WindowState = FormWindowState.Minimized;
                 this.Hide();
             }
             else
             {
+                this.ShowInTaskbar = true;
                 this.Show();
                 this.WindowState = FormWindowState.Normal;
             }
@@ -127,13 +129,13 @@ namespace Caps2CtrlSpace
         public MainForm()
         {
             InitializeComponent();
+#if !DEBUG
+            //this.WindowState = FormWindowState.Minimized;
+#endif
         }
 
         private void MainForm_Load(object sender, EventArgs e)
         {
-            Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
-            notifyIcon.Icon = Icon;
-
             #region i18n locale UI
             this.Text = Resources.strTitleShort;
             lblTitle.Text = Resources.strTitleLong;
@@ -142,7 +144,20 @@ namespace Caps2CtrlSpace
             chkCapsState.Text = Resources.strCapsState;
             chkAutoCheckImeMode.Text = Resources.strAutoCheckImeMode;
             chkOnTop.Text = Resources.strOnTop;
+
+            tsmiImeModeEnglish.Text = Resources.strSaveAsImeModeEnglish;
+            tsmiImeModeLocale.Text = Resources.strSaveAsImeModeLocale;
+            tsmiImeModeDisabled.Text = Resources.strSaveAsImeModeDisabled;
+            tsmiImeModeManual.Text = Resources.strSaveAsImeModeManual;
+            tsmiInputIndicator.Text = Resources.strSaveAsInputIndicator;
             #endregion
+
+            Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
+            notifyIcon.Icon = Icon;
+            notifyIcon.Text = this.Text;
+            notifyIcon.BalloonTipIcon = ToolTipIcon.Info;
+            notifyIcon.BalloonTipTitle = Resources.strTitleShort;
+            notifyIcon.BalloonTipText = Resources.strTitleLong;
 
             config = ConfigurationManager.OpenExeConfiguration(Path.Combine(AppPath, Path.ChangeExtension(AppFile, Path.GetExtension(AppFile).ToLower())));
             appSection = config.AppSettings;
@@ -158,6 +173,7 @@ namespace Caps2CtrlSpace
 
         private void MainForm_FormClosed(object sender, FormClosedEventArgs e)
         {
+            KeyMapper.ToggleLights(KeyMapper.Locks.None);
             SaveConfig();
         }
 
@@ -187,6 +203,20 @@ namespace Caps2CtrlSpace
         private void tsmiExit_Click(object sender, EventArgs e)
         {
             Close();
+        }
+
+        private void tsmiImeState_Click(object sender, EventArgs e)
+        {
+            if (sender == tsmiImeModeEnglish && picImeMode.Image is Bitmap)
+                picImeMode.Image.Save(Path.Combine(AppPath, $"{Ime.KeyboardLayout}_{(int)ImeIndicatorMode.English}.png"));
+            else if (sender == tsmiImeModeLocale && picImeMode.Image is Bitmap)
+                picImeMode.Image.Save(Path.Combine(AppPath, $"{Ime.KeyboardLayout}_{(int)ImeIndicatorMode.Locale}.png"));
+            else if (sender == tsmiImeModeDisabled && picImeMode.Image is Bitmap)
+                picImeMode.Image.Save(Path.Combine(AppPath, $"{Ime.KeyboardLayout}_{(int)ImeIndicatorMode.Disabled}.png"));
+            else if (sender == tsmiImeModeManual && picImeMode.Image is Bitmap)
+                picImeMode.Image.Save(Path.Combine(AppPath, $"{Ime.KeyboardLayout}_{(int)ImeIndicatorMode.Manual}.png"));
+            else if (sender == tsmiInputIndicator && picInputIndicator.Image is Bitmap)
+                picInputIndicator.Image.Save(Path.Combine(AppPath, $"{Ime.KeyboardLayout}_{(int)ImeIndicatorMode.Layout}.png"));
         }
 
         private void chkAutoRun_CheckedChanged(object sender, EventArgs e)
@@ -244,9 +274,16 @@ namespace Caps2CtrlSpace
 #if DEBUG
                 Console.WriteLine($"{KeyMapper.CurrentImeMode}");
 #endif
+                picImeMode.Image = Ime.CurrentImeModeBitmap;
+                picInputIndicator.Image = Ime.CurrentInputIndicatorBitmap;
+
+                var ImeModeFile = Path.Combine(AppPath, $"{Ime.KeyboardLayout}_{(int)ImeIndicatorMode.Layout}.png");
+                if (!File.Exists(ImeModeFile) && picImeMode.Image is Bitmap) picImeMode.Image.Save(ImeModeFile);
+                var InputIndicatorFile = Path.Combine(AppPath, $"{Ime.KeyboardLayout}_{(int)ImeIndicatorMode.Layout}.png");
+                if (!File.Exists(InputIndicatorFile) && picInputIndicator.Image is Bitmap) picInputIndicator.Image.Save(InputIndicatorFile);
+
                 lblImeLayout.Text = $"{Ime.KeyboardLayout}, {Ime.KeyboardLayoutName}";
                 lblWindowText.Text = $"{Ime.ActiveWindowTitle}[{Ime.ActiveWindowHandle.ToInt32()}]";
-                picIndicator.Image = Ime.CurrentImeIndicator;
             }
         }
 

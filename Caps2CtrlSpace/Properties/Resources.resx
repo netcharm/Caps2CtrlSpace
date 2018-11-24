@@ -132,6 +132,21 @@
   <data name="strOptions" xml:space="preserve">
     <value>Options</value>
   </data>
+  <data name="strSaveAsImeModeDisabled" xml:space="preserve">
+    <value>Save As Input Disabled Icon</value>
+  </data>
+  <data name="strSaveAsImeModeEnglish" xml:space="preserve">
+    <value>Save As Input English Icon</value>
+  </data>
+  <data name="strSaveAsImeModeLocale" xml:space="preserve">
+    <value>Save As Input Locale Icon</value>
+  </data>
+  <data name="strSaveAsImeModeManual" xml:space="preserve">
+    <value>Save As Input Manual Icon</value>
+  </data>
+  <data name="strSaveAsInputIndicator" xml:space="preserve">
+    <value>Save As Input Layout Indicator Icon</value>
+  </data>
   <data name="strTitleLong" xml:space="preserve">
     <value>Convert CapsLock key to Ctrl+Space</value>
   </data>
