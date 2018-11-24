@@ -257,8 +257,8 @@ namespace Caps2CtrlSpace
                                 hdcDst = gDst.GetHdc();
                                 bool succeeded = BitBlt(hdcDst, 0, 0, w, h, hdcSrc, 0, 0, TernaryRasterOperations.SRCCOPY);
                                 //bool succeeded = PrintWindow(hWnd, hdcDst, 0);
-                                gSrc.ReleaseHdc(hdcSrc);
-                                gDst.ReleaseHdc(hdcDst);
+                                //gSrc.ReleaseHdc(hdcSrc);
+                                //gDst.ReleaseHdc(hdcDst);
                                 if (succeeded) result = ToGrayScale(bmp);
                             }
                             catch
