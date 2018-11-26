@@ -39,6 +39,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -48,6 +49,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
   </PropertyGroup>
   <PropertyGroup>
     <ManifestCertificateThumbprint>77EAEF28EE8CADC452BC4B15C86DA88465878317</ManifestCertificateThumbprint>
@@ -111,7 +113,9 @@
     <EmbeddedResource Include="Properties\Resources.zh-hans.resx">
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <None Include="app.manifest" />
+    <None Include="app.manifest">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -139,6 +143,11 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Caps2CtrlSpace-Lite.ico" />
+    <None Include="Resources\1028_2_.png" />
+    <None Include="Resources\1028_4_.png" />
+    <None Include="Resources\1028_3_.png" />
+    <None Include="Resources\1028_1_.png" />
+    <None Include="Resources\2052_0_.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

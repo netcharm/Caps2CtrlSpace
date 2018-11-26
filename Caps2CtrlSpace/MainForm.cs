@@ -173,7 +173,8 @@ namespace Caps2CtrlSpace
 
         private void MainForm_FormClosed(object sender, FormClosedEventArgs e)
         {
-            KeyMapper.ToggleLights(KeyMapper.Locks.None);
+            KeyMapper.CloseCapsLock();
+            KeyMapper.CapsLockLightOff();
             SaveConfig();
         }
 
@@ -193,6 +194,18 @@ namespace Caps2CtrlSpace
         private void notifyIcon_MouseDoubleClick(object sender, MouseEventArgs e)
         {
             SetHide(false);
+        }
+
+        private void edTest_DoubleClick(object sender, EventArgs e)
+        {
+            if (edTest.ImeMode == ImeMode.On)
+                edTest.ImeMode = ImeMode.Off;
+            else if (edTest.ImeMode == ImeMode.Off)
+                edTest.ImeMode = ImeMode.Disable;
+            else if (edTest.ImeMode == ImeMode.Disable)
+                edTest.ImeMode = ImeMode.On;
+            else
+                edTest.ImeMode = ImeMode.Off;
         }
 
         private void tsmiShow_Click(object sender, EventArgs e)
@@ -259,31 +272,41 @@ namespace Caps2CtrlSpace
             updateConfig = true;
         }
 
+        private ImeIndicatorMode lastImeMode = ImeIndicatorMode.Disabled;
         private void timer_Tick(object sender, EventArgs e)
         {
             if (chkCapsState.Checked)
             {
-                KeyMapper.CurrentKeyboardLayout = (KeyboardLayout)Ime.KeyboardLayout;
+                var currentLayout = Ime.KeyboardLayout;
+                var currentMode = Ime.Mode;
+                KeyMapper.CurrentKeyboardLayout = (SysKeyboardLayout)currentLayout;
                 if (chkAutoCheckImeMode.Checked)
                 {
-                    KeyMapper.CurrentImeMode = Ime.Mode;
-                    if(KeyMapper.CurrentImeMode != ImeIndicatorMode.Manual)
-                        KeyMapper.ToggleLights(KeyMapper.Locks.KeyboardCapsLockOn);
+                    KeyMapper.CurrentImeMode = currentMode;
+                    if(KeyMapper.CurrentImeMode != ImeIndicatorMode.Disabled && KeyMapper.CurrentImeMode != ImeIndicatorMode.Manual)
+                        KeyMapper.CapsLockLightAuto();
                 }
                 else KeyMapper.CurrentImeMode = ImeIndicatorMode.Manual;
 #if DEBUG
                 Console.WriteLine($"{KeyMapper.CurrentImeMode}");
 #endif
-                picImeMode.Image = Ime.CurrentImeModeBitmap;
-                picInputIndicator.Image = Ime.CurrentInputIndicatorBitmap;
+                //if(lastImeMode != KeyMapper.CurrentImeMode)
+                {
+                    picImeMode.Image = Ime.CurrentImeModeBitmap;
+                    picInputIndicator.Image = Ime.CurrentInputIndicatorBitmap;
 
-                var ImeModeFile = Path.Combine(AppPath, $"{Ime.KeyboardLayout}_{(int)ImeIndicatorMode.Layout}.png");
-                if (!File.Exists(ImeModeFile) && picImeMode.Image is Bitmap) picImeMode.Image.Save(ImeModeFile);
-                var InputIndicatorFile = Path.Combine(AppPath, $"{Ime.KeyboardLayout}_{(int)ImeIndicatorMode.Layout}.png");
-                if (!File.Exists(InputIndicatorFile) && picInputIndicator.Image is Bitmap) picInputIndicator.Image.Save(InputIndicatorFile);
+                    //var ImeModeFile = Path.Combine(AppPath, $"{currentLayout}_{(int)currentMode}.png");
+                    //if (!File.Exists(ImeModeFile) && picImeMode.Image is Bitmap) picImeMode.Image.Save(ImeModeFile);
+                    //var InputIndicatorFile = Path.Combine(AppPath, $"{currentLayout}_{(int)ImeIndicatorMode.Layout}.png");
+                    //if (!File.Exists(InputIndicatorFile) && picInputIndicator.Image is Bitmap) picInputIndicator.Image.Save(InputIndicatorFile);
 
-                lblImeLayout.Text = $"{Ime.KeyboardLayout}, {Ime.KeyboardLayoutName}";
-                lblWindowText.Text = $"{Ime.ActiveWindowTitle}[{Ime.ActiveWindowHandle.ToInt32()}]";
+                    lblImeLayout.Text = $"{currentLayout}, {Ime.KeyboardLayoutName}";
+                    lblWindowText.Text = $"{Ime.ActiveWindowTitle}[{Ime.ActiveWindowHandle.ToInt32()}]";
+
+                    edTest.Clear();
+                }
+
+                lastImeMode = KeyMapper.CurrentImeMode;
             }
         }
 

@@ -61,6 +61,56 @@ namespace Caps2CtrlSpace.Properties {
         }
         
         /// <summary>
+        ///   查找 System.Drawing.Bitmap 类型的本地化资源。
+        /// </summary>
+        internal static System.Drawing.Bitmap _1028_1_ {
+            get {
+                object obj = ResourceManager.GetObject("_1028_1_", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   查找 System.Drawing.Bitmap 类型的本地化资源。
+        /// </summary>
+        internal static System.Drawing.Bitmap _1028_2_ {
+            get {
+                object obj = ResourceManager.GetObject("_1028_2_", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   查找 System.Drawing.Bitmap 类型的本地化资源。
+        /// </summary>
+        internal static System.Drawing.Bitmap _1028_3_ {
+            get {
+                object obj = ResourceManager.GetObject("_1028_3_", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   查找 System.Drawing.Bitmap 类型的本地化资源。
+        /// </summary>
+        internal static System.Drawing.Bitmap _1028_4_ {
+            get {
+                object obj = ResourceManager.GetObject("_1028_4_", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   查找 System.Drawing.Bitmap 类型的本地化资源。
+        /// </summary>
+        internal static System.Drawing.Bitmap _2052_0_ {
+            get {
+                object obj = ResourceManager.GetObject("_2052_0_", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 Auto Check IME Mode (Will increase CPU usage) 的本地化字符串。
         /// </summary>
         internal static string strAutoCheckImeMode {

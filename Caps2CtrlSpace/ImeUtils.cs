@@ -132,8 +132,7 @@ namespace Caps2CtrlSpace
         private const int KL_NAMELENGTH = 9;
 
         private static Dictionary<int, string> InstalledKeyboardLayout = new Dictionary<int, string>();
-        private static int lastKeyboardLayout = (int)Caps2CtrlSpace.KeyboardLayout.ENG;
-        private static int lastWindowHandle = 0;
+        private static int lastKeyboardLayout = (int)SysKeyboardLayout.ENG;
 
         private Tuple<int, int> GetFocusKeyboardLayout()
         {
@@ -252,7 +251,7 @@ namespace Caps2CtrlSpace
         public static Bitmap ToBW(Bitmap Bmp)
         {
             if (Bmp is Bitmap)
-                return (Bmp.Clone(new Rectangle(0, 0, Bmp.Width, Bmp.Height), PixelFormat.Format1bppIndexed));
+                return (Bmp.Clone(new Rectangle(0, 0, Bmp.Width, Bmp.Height), PixelFormat.Format4bppIndexed));
             else return null;
         }
 
@@ -358,7 +357,7 @@ namespace Caps2CtrlSpace
             return (result);
         }
 
-        public static bool CompareBitmap(Bitmap src, Bitmap dst, double tolerance=0.1)
+        public static bool CompareBitmap(Bitmap src, Bitmap dst, double tolerance=0.05)
         {
             bool result = false;
 
@@ -469,25 +468,14 @@ namespace Caps2CtrlSpace
                 var klo = kl;
                 if (kl == 0)
                     kl = GetConsoleKeyboardLayout();
-
 #if DEBUG
-                Console.WriteLine($"{activeWindowHandle}:{activeWindowThread}, - {klo} : {kl}");
+                Console.WriteLine($"{activeWindowHandle}:{activeWindowThread}, - {klo}:{kl}, {Control.IsKeyLocked(Keys.CapsLock)}");
 #endif
-
-                if (InstalledKeyboardLayout.Count <= 0)
-                {
-                    InitImeIndicatorsList();
-                }
-
-                if (Control.IsKeyLocked(Keys.CapsLock))
+                if (KeyMapper.CurrentKeyboardLayout != SysKeyboardLayout.ENG && Control.IsKeyLocked(Keys.CapsLock))
                 {
                     KeyMapper.ToggleCapsLock();
                 }
 
-                if (lastWindowHandle == activeWindowHandle.ToInt32() && kl == (int)Caps2CtrlSpace.KeyboardLayout.CHT)
-                {
-                    //KeyMapper.ToggleCtrlSpace();
-                }
                 result = kl;
                 lastKeyboardLayout = kl;
                 ActiveWindowHandle = activeWindowHandle;
@@ -497,28 +485,24 @@ namespace Caps2CtrlSpace
 
         private static ImeIndicatorMode GetImeMode(int KeyboardLayout)
         {
-            ImeIndicatorMode result = ImeIndicatorMode.Manual;
-
-            if (lastKeyboardLayout == 0)
-            {
-                lastKeyboardLayout = GetConsoleKeyboardLayout();
-            }
+            ImeIndicatorMode result = ImeIndicatorMode.Disabled;
 
             CurrentInputIndicatorBitmap = GetInputIndicatorBitmap();
             CurrentImeModeBitmap = GetImeModeBitmap();
-
-            //var kl = lastKeyboardLayout;
-            var kl = KeyboardLayout;
-            if (ImeIndicators.ContainsKey(kl) && ImeIndicators[kl].Locale is Bitmap)
+            if(CurrentImeModeBitmap is Bitmap)
             {
-                if (CompareBitmap(CurrentImeModeBitmap, ImeIndicators[kl].Manual))
-                    result = ImeIndicatorMode.Manual;
-                else if (CompareBitmap(CurrentImeModeBitmap, ImeIndicators[kl].Locale))
-                    result = ImeIndicatorMode.Locale;
-                else if (CompareBitmap(CurrentImeModeBitmap, ImeIndicators[kl].English))
-                    result = ImeIndicatorMode.English;
-                else if (CompareBitmap(CurrentImeModeBitmap, ImeIndicators[kl].Disabled))
-                    result = ImeIndicatorMode.Disabled;
+                var kl = KeyboardLayout;
+                if (ImeIndicators.ContainsKey(kl) && ImeIndicators[kl].Locale is Bitmap)
+                {
+                    if (CompareBitmap(CurrentImeModeBitmap, ImeIndicators[kl].Manual))
+                        result = ImeIndicatorMode.Manual;
+                    else if (CompareBitmap(CurrentImeModeBitmap, ImeIndicators[kl].Locale))
+                        result = ImeIndicatorMode.Locale;
+                    else if (CompareBitmap(CurrentImeModeBitmap, ImeIndicators[kl].English))
+                        result = ImeIndicatorMode.English;
+                    //else if (CompareBitmap(CurrentImeModeBitmap, ImeIndicators[kl].Disabled))
+                    //    result = ImeIndicatorMode.Disabled;
+                }
             }
 
             return (result);

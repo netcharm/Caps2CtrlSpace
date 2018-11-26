@@ -40,6 +40,7 @@
             this.lblImeLayout = new System.Windows.Forms.Label();
             this.lblWindowText = new System.Windows.Forms.Label();
             this.grpOptions = new System.Windows.Forms.GroupBox();
+            this.edTest = new System.Windows.Forms.TextBox();
             this.chkOnTop = new System.Windows.Forms.CheckBox();
             this.chkAutoCheckImeMode = new System.Windows.Forms.CheckBox();
             this.chkCapsState = new System.Windows.Forms.CheckBox();
@@ -138,6 +139,7 @@
             // 
             // grpOptions
             // 
+            this.grpOptions.Controls.Add(this.edTest);
             this.grpOptions.Controls.Add(this.chkOnTop);
             this.grpOptions.Controls.Add(this.chkAutoCheckImeMode);
             this.grpOptions.Controls.Add(this.chkCapsState);
@@ -150,6 +152,14 @@
             this.grpOptions.TabIndex = 7;
             this.grpOptions.TabStop = false;
             this.grpOptions.Text = "Options";
+            // 
+            // edTest
+            // 
+            this.edTest.Location = new System.Drawing.Point(239, 96);
+            this.edTest.Name = "edTest";
+            this.edTest.Size = new System.Drawing.Size(76, 21);
+            this.edTest.TabIndex = 9;
+            this.edTest.DoubleClick += new System.EventHandler(this.edTest_DoubleClick);
             // 
             // chkOnTop
             // 
@@ -229,6 +239,7 @@
             // 
             // tsmiImeModeEnglish
             // 
+            this.tsmiImeModeEnglish.Image = global::Caps2CtrlSpace.Properties.Resources._1028_1_;
             this.tsmiImeModeEnglish.Name = "tsmiImeModeEnglish";
             this.tsmiImeModeEnglish.Size = new System.Drawing.Size(240, 22);
             this.tsmiImeModeEnglish.Text = "Save As English Icon";
@@ -236,6 +247,7 @@
             // 
             // tsmiImeModeLocale
             // 
+            this.tsmiImeModeLocale.Image = global::Caps2CtrlSpace.Properties.Resources._1028_2_;
             this.tsmiImeModeLocale.Name = "tsmiImeModeLocale";
             this.tsmiImeModeLocale.Size = new System.Drawing.Size(240, 22);
             this.tsmiImeModeLocale.Text = "Save As Locale Icon";
@@ -243,6 +255,7 @@
             // 
             // tsmiImeModeDisabled
             // 
+            this.tsmiImeModeDisabled.Image = global::Caps2CtrlSpace.Properties.Resources._1028_3_;
             this.tsmiImeModeDisabled.Name = "tsmiImeModeDisabled";
             this.tsmiImeModeDisabled.Size = new System.Drawing.Size(240, 22);
             this.tsmiImeModeDisabled.Text = "Save As Disabled Icon";
@@ -250,6 +263,7 @@
             // 
             // tsmiImeModeManual
             // 
+            this.tsmiImeModeManual.Image = global::Caps2CtrlSpace.Properties.Resources._1028_4_;
             this.tsmiImeModeManual.Name = "tsmiImeModeManual";
             this.tsmiImeModeManual.Size = new System.Drawing.Size(240, 22);
             this.tsmiImeModeManual.Text = "Save As Manual Icon";
@@ -262,6 +276,7 @@
             // 
             // tsmiInputIndicator
             // 
+            this.tsmiInputIndicator.Image = global::Caps2CtrlSpace.Properties.Resources._2052_0_;
             this.tsmiInputIndicator.Name = "tsmiInputIndicator";
             this.tsmiInputIndicator.Size = new System.Drawing.Size(240, 22);
             this.tsmiInputIndicator.Text = "Save As Input Indicator Icon";
@@ -290,7 +305,6 @@
             this.Controls.Add(this.lblImeLayout);
             this.Controls.Add(this.lblTitle);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
-            this.KeyPreview = true;
             this.Margin = new System.Windows.Forms.Padding(2);
             this.MaximizeBox = false;
             this.Name = "MainForm";
@@ -336,6 +350,7 @@
         private System.Windows.Forms.ToolStripMenuItem tsmiImeModeDisabled;
         private System.Windows.Forms.ToolStripSeparator tsmiSepInputIndicator;
         private System.Windows.Forms.ToolStripMenuItem tsmiInputIndicator;
+        private System.Windows.Forms.TextBox edTest;
     }
 }
 
