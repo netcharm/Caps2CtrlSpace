@@ -21,13 +21,13 @@ namespace Caps2CtrlSpace
         public int dwExtraInfo;
     }
 
-    public enum KeyboardLayout { ENG = 1033, CHS = 2052, CHT = 1028, JAP = 1041 };
+    public enum SysKeyboardLayout { ENG = 1033, CHS = 2052, CHT = 1028, JAP = 1041 };
 
     public class KeyMapper
     {
         static public bool CapsLockLight { get; set; } = false;
 
-        static public KeyboardLayout CurrentKeyboardLayout { get; set; } = KeyboardLayout.ENG;
+        static public SysKeyboardLayout CurrentKeyboardLayout { get; set; } = SysKeyboardLayout.ENG;
         static public ImeIndicatorMode CurrentImeMode { get; set; } = ImeIndicatorMode.Disabled;
 
         private delegate IntPtr HookProc(int nCode, IntPtr wParam, IntPtr lParam);
@@ -52,7 +52,7 @@ namespace Caps2CtrlSpace
         private static extern bool DefineDosDevice(uint dwFlags, string lpDeviceName, string lpTargetPath);
 
         [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        private static extern IntPtr CreateFile(
+        private static extern SafeFileHandle CreateFile(
              [MarshalAs(UnmanagedType.LPTStr)] string filename,
              [MarshalAs(UnmanagedType.U4)] FileAccess access,
              [MarshalAs(UnmanagedType.U4)] FileShare share,
@@ -62,7 +62,7 @@ namespace Caps2CtrlSpace
              IntPtr templateFile);
 
         [DllImport("kernel32.dll", CharSet = CharSet.Ansi, SetLastError = true)]
-        private static extern IntPtr CreateFileA(
+        private static extern SafeFileHandle CreateFileA(
              [MarshalAs(UnmanagedType.LPStr)] string filename,
              [MarshalAs(UnmanagedType.U4)] FileAccess access,
              [MarshalAs(UnmanagedType.U4)] FileShare share,
@@ -72,7 +72,7 @@ namespace Caps2CtrlSpace
              IntPtr templateFile);
 
         [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
-        private static extern IntPtr CreateFileW(
+        private static extern SafeFileHandle CreateFileW(
              [MarshalAs(UnmanagedType.LPWStr)] string filename,
              [MarshalAs(UnmanagedType.U4)] FileAccess access,
              [MarshalAs(UnmanagedType.U4)] FileShare share,
@@ -94,18 +94,19 @@ namespace Caps2CtrlSpace
         );
 
         [Flags]
-        public enum Locks : ushort
+        public enum LockLights : ushort
         {
             None = 0,
             KeyboardScrollLockOn = 1,
             KeyboardNumLockOn = 2,
             KeyboardCapsLockOn = 4
         }
+        public enum LockLightsOp { Toggle, On, Off };
 
         public struct KeyboardIndicatorParameters
         {
             public ushort UnitId;
-            public Locks LedFlags;
+            public LockLights LedFlags;
         }
 
         private const uint FileAnyAccess = 0;
@@ -122,37 +123,64 @@ namespace Caps2CtrlSpace
         private static uint IOCTL_KEYBOARD_QUERY_INDICATORS = ControlCode(FileDeviceKeyboard, 0x0010, MethodBuffered, FileAnyAccess);
         #endregion
 
-        public static void ToggleLights(Locks locks)
+        public static void SetLights(LockLights locks, LockLightsOp op = LockLightsOp.Toggle)
         {
             DefineDosDevice(DddRawTargetPath, "keyboard", "\\Device\\KeyboardClass0");
 
-            var indicatorsIn = new KeyboardIndicatorParameters() { UnitId = 0, LedFlags = Locks.None };
-            var indicatorsOut = new KeyboardIndicatorParameters() { UnitId = 0, LedFlags = Locks.None };
+            var indicatorsIn = new KeyboardIndicatorParameters() { UnitId = 0, LedFlags = LockLights.None };
+            var indicatorsOut = new KeyboardIndicatorParameters() { UnitId = 0, LedFlags = LockLights.None };
 
-            //using (var hKeybd = CreateFile("\\\\.\\keyboard", FileAccess.Write, 0, IntPtr.Zero, FileMode.Open, 0, IntPtr.Zero))
+            using (var hKeybd = CreateFile("\\\\.\\keyboard", FileAccess.Write, 0, IntPtr.Zero, FileMode.Open, 0, IntPtr.Zero))
             {
-                var hKeybd = CreateFile("\\\\.\\keyboard", FileAccess.Write, 0, IntPtr.Zero, FileMode.Open, 0, IntPtr.Zero);
                 var size = Marshal.SizeOf(typeof(KeyboardIndicatorParameters));
                 int bytesReturned = 0;
 
-                var retQ = DeviceIoControl(new SafeFileHandle(hKeybd, false), (int)IOCTL_KEYBOARD_QUERY_INDICATORS, ref indicatorsOut, size, ref indicatorsOut, size, out bytesReturned, IntPtr.Zero);
+                var retQ = DeviceIoControl(hKeybd, (int)IOCTL_KEYBOARD_QUERY_INDICATORS, ref indicatorsOut, size, ref indicatorsOut, size, out bytesReturned, IntPtr.Zero);
                 if (retQ)
                 {
-                    if (CurrentImeMode == ImeIndicatorMode.Manual)
+                    if (op == LockLightsOp.Toggle)
                     {
-                        if (!indicatorsOut.LedFlags.HasFlag(Locks.KeyboardCapsLockOn))
-                            indicatorsIn.LedFlags |= Locks.KeyboardCapsLockOn;
+                        if(indicatorsOut.LedFlags.HasFlag(locks))
+                            indicatorsIn.LedFlags = indicatorsOut.LedFlags & ~locks;
+                        else
+                            indicatorsIn.LedFlags = indicatorsOut.LedFlags | locks;
                     }
-                    else if (CurrentImeMode == ImeIndicatorMode.Locale)
+                    else if (op == LockLightsOp.On)
                     {
-                        indicatorsIn.LedFlags |= Locks.KeyboardCapsLockOn;
+                        indicatorsIn.LedFlags = indicatorsOut.LedFlags | locks;
                     }
-                    if (indicatorsOut.LedFlags.HasFlag(Locks.KeyboardNumLockOn))
-                        indicatorsIn.LedFlags |= Locks.KeyboardNumLockOn;
-                    if (indicatorsOut.LedFlags.HasFlag(Locks.KeyboardScrollLockOn))
-                        indicatorsIn.LedFlags |= Locks.KeyboardScrollLockOn;
-                    var retS = DeviceIoControl(new SafeFileHandle(hKeybd, false), (int)IOCTL_KEYBOARD_SET_INDICATORS, ref indicatorsIn, size, ref indicatorsOut, size, out bytesReturned, IntPtr.Zero);
-                }
+                    else if (op == LockLightsOp.Off)
+                    {
+                        indicatorsIn.LedFlags = indicatorsOut.LedFlags & ~locks;
+                    }
+                    var retS = DeviceIoControl(hKeybd, (int)IOCTL_KEYBOARD_SET_INDICATORS, ref indicatorsIn, size, ref indicatorsOut, size, out bytesReturned, IntPtr.Zero);
+                }                
+            }
+        }
+
+        public static void CapsLockLightOn()
+        {
+            SetLights(LockLights.KeyboardCapsLockOn, LockLightsOp.On);
+        }
+
+        public static void CapsLockLightOff()
+        {
+            SetLights(LockLights.KeyboardCapsLockOn, LockLightsOp.Off);
+        }
+
+        public static void CapsLockLightToggle()
+        {
+            SetLights(LockLights.KeyboardCapsLockOn, LockLightsOp.Toggle);
+        }
+
+        public static void CapsLockLightAuto()
+        {
+            if(CurrentKeyboardLayout != SysKeyboardLayout.ENG)
+            {
+                if (CurrentImeMode == ImeIndicatorMode.Locale)
+                    CapsLockLightOn();
+                else
+                    CapsLockLightOff();
             }
         }
 
@@ -168,6 +196,11 @@ namespace Caps2CtrlSpace
             const int KEYEVENTF_KEYUP = 0x2;
             keybd_event(0x14, 0x45, KEYEVENTF_EXTENDEDKEY, (UIntPtr)0);
             keybd_event(0x14, 0x45, KEYEVENTF_EXTENDEDKEY | KEYEVENTF_KEYUP, (UIntPtr)0);
+        }
+
+        public static void CloseCapsLock()
+        {
+            if (Control.IsKeyLocked(Keys.CapsLock)) ToggleCapsLock();
         }
 
         public static void ToggleCtrlSpace()
@@ -187,13 +220,13 @@ namespace Caps2CtrlSpace
         private const int WM_KEYDOWN = 0x0100;
         private const int WM_SYSKEYDOWN = 0x0104;
 
-        private static KeyboardLayout[] CapsLockEnabledLayout = new KeyboardLayout[] { KeyboardLayout.CHS, KeyboardLayout.CHT, KeyboardLayout.JAP };
+        private static SysKeyboardLayout[] CapsLockEnabledLayout = new SysKeyboardLayout[] { SysKeyboardLayout.CHS, SysKeyboardLayout.CHT, SysKeyboardLayout.JAP };
 
         private static IntPtr _keyboardHookID = IntPtr.Zero;
 
         private static IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam)
         {
-            if (nCode >= 0 && wParam == (IntPtr)WM_KEYDOWN)
+            if (nCode >= 0 && wParam == (IntPtr)WM_KEYDOWN && CurrentKeyboardLayout != SysKeyboardLayout.ENG)
             {
                 var kbd = (KBDLLHOOKSTRUCT)Marshal.PtrToStructure(lParam, typeof(KBDLLHOOKSTRUCT));
                 int vkCode = kbd.vkCode; //Marshal.ReadInt32(lParam);
@@ -204,22 +237,23 @@ namespace Caps2CtrlSpace
                 {
                     try
                     {
-                        if (CurrentKeyboardLayout == KeyboardLayout.CHS)
+                        if (CurrentKeyboardLayout == SysKeyboardLayout.CHS)
                         {
                             SendKeys.Send("^ "); //将CapsLock转换为Ctrl+Space
                         }
-                        else if (CurrentKeyboardLayout == KeyboardLayout.CHT)
+                        else if (CurrentKeyboardLayout == SysKeyboardLayout.CHT)
                         {
                             if(CurrentImeMode == ImeIndicatorMode.Disabled || CurrentImeMode == ImeIndicatorMode.Manual)
                                 SendKeys.Send("^ ");
                             //SendKeys.Send("^ "); //将CapsLock转换为Ctrl+Space
                             SendKeys.Send("+"); //将CapsLock转换为Shift
                         }
-                        else if (CurrentKeyboardLayout == KeyboardLayout.JAP)
+                        else if (CurrentKeyboardLayout == SysKeyboardLayout.JAP)
                         {
                             SendKeys.Send("+{CAPSLOCK}"); //将CapsLock转换为Shift+CapsLock
                         }
-                        if (CapsLockLight) ToggleLights(Locks.KeyboardCapsLockOn);
+
+                        if (CapsLockLight) CapsLockLightAuto();
                     }
                     catch (Exception)
                     {
