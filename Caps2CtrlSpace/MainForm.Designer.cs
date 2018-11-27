@@ -50,7 +50,7 @@
             this.tsmiImeModeEnglish = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiImeModeLocale = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiImeModeDisabled = new System.Windows.Forms.ToolStripMenuItem();
-            this.tsmiImeModeManual = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiImeModeClose = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiSepInputIndicator = new System.Windows.Forms.ToolStripSeparator();
             this.tsmiInputIndicator = new System.Windows.Forms.ToolStripMenuItem();
             this.picInputIndicator = new System.Windows.Forms.PictureBox();
@@ -155,6 +155,7 @@
             // 
             // edTest
             // 
+            this.edTest.ImeMode = System.Windows.Forms.ImeMode.Off;
             this.edTest.Location = new System.Drawing.Point(239, 96);
             this.edTest.Name = "edTest";
             this.edTest.Size = new System.Drawing.Size(76, 21);
@@ -227,21 +228,23 @@
             // 
             // cmsImeMode
             // 
+            this.cmsImeMode.ImageScalingSize = new System.Drawing.Size(24, 24);
             this.cmsImeMode.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.tsmiImeModeEnglish,
             this.tsmiImeModeLocale,
             this.tsmiImeModeDisabled,
-            this.tsmiImeModeManual,
+            this.tsmiImeModeClose,
             this.tsmiSepInputIndicator,
             this.tsmiInputIndicator});
             this.cmsImeMode.Name = "cmsImeMode";
-            this.cmsImeMode.Size = new System.Drawing.Size(241, 120);
+            this.cmsImeMode.Size = new System.Drawing.Size(249, 182);
+            this.cmsImeMode.Opening += new System.ComponentModel.CancelEventHandler(this.cmsImeMode_Opening);
             // 
             // tsmiImeModeEnglish
             // 
             this.tsmiImeModeEnglish.Image = global::Caps2CtrlSpace.Properties.Resources._1028_1_;
             this.tsmiImeModeEnglish.Name = "tsmiImeModeEnglish";
-            this.tsmiImeModeEnglish.Size = new System.Drawing.Size(240, 22);
+            this.tsmiImeModeEnglish.Size = new System.Drawing.Size(248, 30);
             this.tsmiImeModeEnglish.Text = "Save As English Icon";
             this.tsmiImeModeEnglish.Click += new System.EventHandler(this.tsmiImeState_Click);
             // 
@@ -249,7 +252,7 @@
             // 
             this.tsmiImeModeLocale.Image = global::Caps2CtrlSpace.Properties.Resources._1028_2_;
             this.tsmiImeModeLocale.Name = "tsmiImeModeLocale";
-            this.tsmiImeModeLocale.Size = new System.Drawing.Size(240, 22);
+            this.tsmiImeModeLocale.Size = new System.Drawing.Size(248, 30);
             this.tsmiImeModeLocale.Text = "Save As Locale Icon";
             this.tsmiImeModeLocale.Click += new System.EventHandler(this.tsmiImeState_Click);
             // 
@@ -257,28 +260,28 @@
             // 
             this.tsmiImeModeDisabled.Image = global::Caps2CtrlSpace.Properties.Resources._1028_3_;
             this.tsmiImeModeDisabled.Name = "tsmiImeModeDisabled";
-            this.tsmiImeModeDisabled.Size = new System.Drawing.Size(240, 22);
+            this.tsmiImeModeDisabled.Size = new System.Drawing.Size(248, 30);
             this.tsmiImeModeDisabled.Text = "Save As Disabled Icon";
             this.tsmiImeModeDisabled.Click += new System.EventHandler(this.tsmiImeState_Click);
             // 
-            // tsmiImeModeManual
+            // tsmiImeModeClose
             // 
-            this.tsmiImeModeManual.Image = global::Caps2CtrlSpace.Properties.Resources._1028_4_;
-            this.tsmiImeModeManual.Name = "tsmiImeModeManual";
-            this.tsmiImeModeManual.Size = new System.Drawing.Size(240, 22);
-            this.tsmiImeModeManual.Text = "Save As Manual Icon";
-            this.tsmiImeModeManual.Click += new System.EventHandler(this.tsmiImeState_Click);
+            this.tsmiImeModeClose.Image = global::Caps2CtrlSpace.Properties.Resources._1028_4_;
+            this.tsmiImeModeClose.Name = "tsmiImeModeClose";
+            this.tsmiImeModeClose.Size = new System.Drawing.Size(248, 30);
+            this.tsmiImeModeClose.Text = "Save As Close Icon";
+            this.tsmiImeModeClose.Click += new System.EventHandler(this.tsmiImeState_Click);
             // 
             // tsmiSepInputIndicator
             // 
             this.tsmiSepInputIndicator.Name = "tsmiSepInputIndicator";
-            this.tsmiSepInputIndicator.Size = new System.Drawing.Size(237, 6);
+            this.tsmiSepInputIndicator.Size = new System.Drawing.Size(245, 6);
             // 
             // tsmiInputIndicator
             // 
             this.tsmiInputIndicator.Image = global::Caps2CtrlSpace.Properties.Resources._2052_0_;
             this.tsmiInputIndicator.Name = "tsmiInputIndicator";
-            this.tsmiInputIndicator.Size = new System.Drawing.Size(240, 22);
+            this.tsmiInputIndicator.Size = new System.Drawing.Size(248, 30);
             this.tsmiInputIndicator.Text = "Save As Input Indicator Icon";
             this.tsmiInputIndicator.Click += new System.EventHandler(this.tsmiImeState_Click);
             // 
@@ -344,7 +347,7 @@
         private System.Windows.Forms.PictureBox picImeMode;
         private System.Windows.Forms.PictureBox picInputIndicator;
         private System.Windows.Forms.ContextMenuStrip cmsImeMode;
-        private System.Windows.Forms.ToolStripMenuItem tsmiImeModeManual;
+        private System.Windows.Forms.ToolStripMenuItem tsmiImeModeClose;
         private System.Windows.Forms.ToolStripMenuItem tsmiImeModeEnglish;
         private System.Windows.Forms.ToolStripMenuItem tsmiImeModeLocale;
         private System.Windows.Forms.ToolStripMenuItem tsmiImeModeDisabled;

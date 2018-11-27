@@ -66,10 +66,27 @@ namespace Caps2CtrlSpace
         public Bitmap English { get; set; } = null;
         public Bitmap Locale { get; set; } = null;
         public Bitmap Disabled { get; set; } = null;
-        public Bitmap Manual { get; set; } = null;
+        public Bitmap Close { get; set; } = null;
     }
 
-    public enum ImeIndicatorMode { Layout=0, English, Locale, Disabled, Manual };
+    public enum ImeIndicatorMode { Layout=0, English, Locale, Disabled, Close };
+
+    public enum ImeIndicatorModeN
+    {
+        Layout = 0,
+        On = 1,
+        Off = 2,
+        Disable = 3,
+        Hiragana = 4,
+        Katakana = 5,
+        KatakanaHalf = 6,
+        AlphaFull = 7,
+        Alpha = 8,
+        HangulFull = 9,
+        Hangul = 10,
+        Close = 11,
+        OnHalf = 12
+    };
 
     class Ime
     {
@@ -377,9 +394,9 @@ namespace Caps2CtrlSpace
 
                     Color cSrc, cDst;
 
-                    for (int y = 0; y < bSrc.Height; y++)
+                    for (int y = 6; y < bSrc.Height - 6; y++)
                     {
-                        for (int x = 0; x < bSrc.Width; x++)
+                        for (int x = 2; x < bSrc.Width - 2; x++)
                         {
                             cSrc = bSrc.GetPixel(x, y);
                             cDst = bDst.GetPixel(x, y);
@@ -414,7 +431,7 @@ namespace Caps2CtrlSpace
                     ImeIndicators[ckl].English = ToBW(LoadBitmap(Path.Combine(AppPath, $"{ckl}_{(int)ImeIndicatorMode.English}.png")));
                     ImeIndicators[ckl].Locale = ToBW(LoadBitmap(Path.Combine(AppPath, $"{ckl}_{(int)ImeIndicatorMode.Locale}.png")));
                     ImeIndicators[ckl].Disabled = ToBW(LoadBitmap(Path.Combine(AppPath, $"{ckl}_{(int)ImeIndicatorMode.Disabled}.png")));
-                    ImeIndicators[ckl].Manual = ToBW(LoadBitmap(Path.Combine(AppPath, $"{ckl}_{(int)ImeIndicatorMode.Manual}.png")));
+                    ImeIndicators[ckl].Close = ToBW(LoadBitmap(Path.Combine(AppPath, $"{ckl}_{(int)ImeIndicatorMode.Close}.png")));
                 }
             }
         }
@@ -494,8 +511,8 @@ namespace Caps2CtrlSpace
                 var kl = KeyboardLayout;
                 if (ImeIndicators.ContainsKey(kl) && ImeIndicators[kl].Locale is Bitmap)
                 {
-                    if (CompareBitmap(CurrentImeModeBitmap, ImeIndicators[kl].Manual))
-                        result = ImeIndicatorMode.Manual;
+                    if (CompareBitmap(CurrentImeModeBitmap, ImeIndicators[kl].Close))
+                        result = ImeIndicatorMode.Close;
                     else if (CompareBitmap(CurrentImeModeBitmap, ImeIndicators[kl].Locale))
                         result = ImeIndicatorMode.Locale;
                     else if (CompareBitmap(CurrentImeModeBitmap, ImeIndicators[kl].English))

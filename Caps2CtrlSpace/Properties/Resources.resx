@@ -141,8 +141,8 @@
   <data name="strSaveAsImeModeLocale" xml:space="preserve">
     <value>Save As Input Locale Icon</value>
   </data>
-  <data name="strSaveAsImeModeManual" xml:space="preserve">
-    <value>Save As Input Manual Icon</value>
+  <data name="strSaveAsImeModeClose" xml:space="preserve">
+    <value>Save As Input Close Icon</value>
   </data>
   <data name="strSaveAsInputIndicator" xml:space="preserve">
     <value>Save As Input Layout Indicator Icon</value>

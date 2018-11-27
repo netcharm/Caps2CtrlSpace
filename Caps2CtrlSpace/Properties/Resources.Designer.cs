@@ -156,6 +156,15 @@ namespace Caps2CtrlSpace.Properties {
         }
         
         /// <summary>
+        ///   查找类似 Save As Input Close Icon 的本地化字符串。
+        /// </summary>
+        internal static string strSaveAsImeModeClose {
+            get {
+                return ResourceManager.GetString("strSaveAsImeModeClose", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 Save As Input Disabled Icon 的本地化字符串。
         /// </summary>
         internal static string strSaveAsImeModeDisabled {
@@ -179,15 +188,6 @@ namespace Caps2CtrlSpace.Properties {
         internal static string strSaveAsImeModeLocale {
             get {
                 return ResourceManager.GetString("strSaveAsImeModeLocale", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   查找类似 Save As Input Manual Icon 的本地化字符串。
-        /// </summary>
-        internal static string strSaveAsImeModeManual {
-            get {
-                return ResourceManager.GetString("strSaveAsImeModeManual", resourceCulture);
             }
         }
         

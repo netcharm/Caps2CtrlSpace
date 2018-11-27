@@ -148,7 +148,7 @@ namespace Caps2CtrlSpace
             tsmiImeModeEnglish.Text = Resources.strSaveAsImeModeEnglish;
             tsmiImeModeLocale.Text = Resources.strSaveAsImeModeLocale;
             tsmiImeModeDisabled.Text = Resources.strSaveAsImeModeDisabled;
-            tsmiImeModeManual.Text = Resources.strSaveAsImeModeManual;
+            tsmiImeModeClose.Text = Resources.strSaveAsImeModeClose;
             tsmiInputIndicator.Text = Resources.strSaveAsInputIndicator;
             #endregion
 
@@ -198,14 +198,55 @@ namespace Caps2CtrlSpace
 
         private void edTest_DoubleClick(object sender, EventArgs e)
         {
-            if (edTest.ImeMode == ImeMode.On)
-                edTest.ImeMode = ImeMode.Off;
-            else if (edTest.ImeMode == ImeMode.Off)
-                edTest.ImeMode = ImeMode.Disable;
-            else if (edTest.ImeMode == ImeMode.Disable)
-                edTest.ImeMode = ImeMode.On;
-            else
-                edTest.ImeMode = ImeMode.Off;
+            if (KeyMapper.CurrentKeyboardLayout == SysKeyboardLayout.CHS ||
+                KeyMapper.CurrentKeyboardLayout == SysKeyboardLayout.CHK)
+            {
+                if (edTest.ImeMode == ImeMode.On)
+                    edTest.ImeMode = ImeMode.Off;
+                else if (edTest.ImeMode == ImeMode.Off)
+                    edTest.ImeMode = ImeMode.On;
+                else
+                    edTest.ImeMode = ImeMode.Off;
+            }
+            else if(KeyMapper.CurrentKeyboardLayout == SysKeyboardLayout.CHT)
+            {
+                if (edTest.ImeMode == ImeMode.On)
+                    edTest.ImeMode = ImeMode.Off;
+                else if (edTest.ImeMode == ImeMode.Off)
+                    edTest.ImeMode = ImeMode.Close;
+                else if (edTest.ImeMode == ImeMode.Close)
+                    edTest.ImeMode = ImeMode.Disable;
+                else if (edTest.ImeMode == ImeMode.Disable)
+                    edTest.ImeMode = ImeMode.On;
+                else
+                    edTest.ImeMode = ImeMode.Off;
+            }
+            else if (KeyMapper.CurrentKeyboardLayout == SysKeyboardLayout.JAP)
+            {
+                if (edTest.ImeMode == ImeMode.Hiragana)
+                    edTest.ImeMode = ImeMode.Off;
+                else if (edTest.ImeMode == ImeMode.Off)
+                    edTest.ImeMode = ImeMode.Disable;
+                else if (edTest.ImeMode == ImeMode.Disable)
+                    edTest.ImeMode = ImeMode.Hiragana;
+                else
+                    edTest.ImeMode = ImeMode.Off;
+            }
+            else if (KeyMapper.CurrentKeyboardLayout == SysKeyboardLayout.KOR)
+            {
+                if (edTest.ImeMode == ImeMode.Alpha)
+                    edTest.ImeMode = ImeMode.Disable;
+                else if (edTest.ImeMode == ImeMode.Disable)
+                    edTest.ImeMode = ImeMode.AlphaFull;
+                else if (edTest.ImeMode == ImeMode.AlphaFull)
+                    edTest.ImeMode = ImeMode.Hangul;
+                else if (edTest.ImeMode == ImeMode.Hangul)
+                    edTest.ImeMode = ImeMode.HangulFull;
+                else if (edTest.ImeMode == ImeMode.HangulFull)
+                    edTest.ImeMode = ImeMode.Alpha;
+                else
+                    edTest.ImeMode = ImeMode.Alpha;
+            }
         }
 
         private void tsmiShow_Click(object sender, EventArgs e)
@@ -217,7 +258,7 @@ namespace Caps2CtrlSpace
         {
             Close();
         }
-
+    
         private void tsmiImeState_Click(object sender, EventArgs e)
         {
             if (sender == tsmiImeModeEnglish && picImeMode.Image is Bitmap)
@@ -226,10 +267,36 @@ namespace Caps2CtrlSpace
                 picImeMode.Image.Save(Path.Combine(AppPath, $"{Ime.KeyboardLayout}_{(int)ImeIndicatorMode.Locale}.png"));
             else if (sender == tsmiImeModeDisabled && picImeMode.Image is Bitmap)
                 picImeMode.Image.Save(Path.Combine(AppPath, $"{Ime.KeyboardLayout}_{(int)ImeIndicatorMode.Disabled}.png"));
-            else if (sender == tsmiImeModeManual && picImeMode.Image is Bitmap)
-                picImeMode.Image.Save(Path.Combine(AppPath, $"{Ime.KeyboardLayout}_{(int)ImeIndicatorMode.Manual}.png"));
+            else if (sender == tsmiImeModeClose && picImeMode.Image is Bitmap)
+                picImeMode.Image.Save(Path.Combine(AppPath, $"{Ime.KeyboardLayout}_{(int)ImeIndicatorMode.Close}.png"));
             else if (sender == tsmiInputIndicator && picInputIndicator.Image is Bitmap)
                 picInputIndicator.Image.Save(Path.Combine(AppPath, $"{Ime.KeyboardLayout}_{(int)ImeIndicatorMode.Layout}.png"));
+        }
+
+        private void cmsImeMode_Opening(object sender, CancelEventArgs e)
+        {
+            if (sender == cmsImeMode)
+            {
+                var source = (sender as ContextMenuStrip).SourceControl;
+                if (source == picImeMode)
+                {
+                    tsmiImeModeEnglish.Enabled = true;
+                    tsmiImeModeLocale.Enabled = true;
+                    tsmiImeModeDisabled.Enabled = true;
+                    tsmiImeModeClose.Enabled = true;
+
+                    tsmiInputIndicator.Enabled = false;
+                }
+                else if (source == picInputIndicator)
+                {
+                    tsmiImeModeEnglish.Enabled = false;
+                    tsmiImeModeLocale.Enabled = false;
+                    tsmiImeModeDisabled.Enabled = false;
+                    tsmiImeModeClose.Enabled = false;
+
+                    tsmiInputIndicator.Enabled = true;
+                }
+            }
         }
 
         private void chkAutoRun_CheckedChanged(object sender, EventArgs e)
@@ -256,7 +323,7 @@ namespace Caps2CtrlSpace
 
         private void chkCapsState_CheckedChanged(object sender, EventArgs e)
         {
-            KeyMapper.CapsLockLight = chkCapsState.Checked;
+            KeyMapper.CapsLockLightEnabled = chkCapsState.Checked;
             timer.Enabled = chkCapsState.Checked;
             updateConfig = true;
         }
@@ -272,41 +339,29 @@ namespace Caps2CtrlSpace
             updateConfig = true;
         }
 
-        private ImeIndicatorMode lastImeMode = ImeIndicatorMode.Disabled;
         private void timer_Tick(object sender, EventArgs e)
         {
             if (chkCapsState.Checked)
             {
                 var currentLayout = Ime.KeyboardLayout;
                 var currentMode = Ime.Mode;
-                KeyMapper.CurrentKeyboardLayout = (SysKeyboardLayout)currentLayout;
-                if (chkAutoCheckImeMode.Checked)
+                KeyMapper.CapsLockLightAutoCheck = chkAutoCheckImeMode.Checked;
+                KeyMapper.CurrentImeMode = currentMode;
+                try
                 {
-                    KeyMapper.CurrentImeMode = currentMode;
-                    if(KeyMapper.CurrentImeMode != ImeIndicatorMode.Disabled && KeyMapper.CurrentImeMode != ImeIndicatorMode.Manual)
-                        KeyMapper.CapsLockLightAuto();
+                    KeyMapper.CurrentKeyboardLayout = (SysKeyboardLayout)currentLayout;
                 }
-                else KeyMapper.CurrentImeMode = ImeIndicatorMode.Manual;
-#if DEBUG
-                Console.WriteLine($"{KeyMapper.CurrentImeMode}");
-#endif
-                //if(lastImeMode != KeyMapper.CurrentImeMode)
+                catch (Exception)
                 {
-                    picImeMode.Image = Ime.CurrentImeModeBitmap;
-                    picInputIndicator.Image = Ime.CurrentInputIndicatorBitmap;
-
-                    //var ImeModeFile = Path.Combine(AppPath, $"{currentLayout}_{(int)currentMode}.png");
-                    //if (!File.Exists(ImeModeFile) && picImeMode.Image is Bitmap) picImeMode.Image.Save(ImeModeFile);
-                    //var InputIndicatorFile = Path.Combine(AppPath, $"{currentLayout}_{(int)ImeIndicatorMode.Layout}.png");
-                    //if (!File.Exists(InputIndicatorFile) && picInputIndicator.Image is Bitmap) picInputIndicator.Image.Save(InputIndicatorFile);
-
-                    lblImeLayout.Text = $"{currentLayout}, {Ime.KeyboardLayoutName}";
-                    lblWindowText.Text = $"{Ime.ActiveWindowTitle}[{Ime.ActiveWindowHandle.ToInt32()}]";
-
-                    edTest.Clear();
+                    KeyMapper.CurrentKeyboardLayout = SysKeyboardLayout.ENG;
                 }
+                picImeMode.Image = Ime.CurrentImeModeBitmap;
+                picInputIndicator.Image = Ime.CurrentInputIndicatorBitmap;
 
-                lastImeMode = KeyMapper.CurrentImeMode;
+                lblImeLayout.Text = $"{currentLayout}, {Ime.KeyboardLayoutName}";
+                lblWindowText.Text = $"{Ime.ActiveWindowTitle}[{Ime.ActiveWindowHandle.ToInt32()}]";
+
+                edTest.Text = edTest.ImeMode.ToString();
             }
         }
 
