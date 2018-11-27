@@ -25,8 +25,9 @@ system, and with right size, maybe `22x34`,
 >>   1. `1` = English
 >>   1. `2` = Ime Locale
 >>   1. `3` = Disabled (maybe unnecessary) 
->>   1. `4` = Manual (maybe unnecessary)
-> 1. Auto Save Keyboard Layout Mode & Layout Indicator Image
+>>   1. `4` = Close (maybe unnecessary)
+> 1. Add contextmenu to Ime Mode & Indicator Image Control, for save 
+the Keyboard Layout Mode & Layout Indicator Image.
 
 
 # 原理
