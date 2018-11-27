@@ -141,9 +141,22 @@ namespace Caps2CtrlSpace
         [return: MarshalAs(UnmanagedType.Bool)]
         private static extern bool PrintWindow(IntPtr hwnd, IntPtr hDC, uint nFlags);
 
-        [DllImport("gdi32.dll", EntryPoint = "BitBlt", SetLastError = true)]
+        [DllImport("gdi32.dll", EntryPoint = "BitBlt", CharSet = CharSet.Auto, SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
-        private static extern bool BitBlt([In] IntPtr hdc, int nXDest, int nYDest, int nWidth, int nHeight, [In] IntPtr hdcSrc, int nXSrc, int nYSrc, TernaryRasterOperations dwRop);
+        private static extern bool BitBlt(
+            [In] IntPtr hdc, 
+            int nXDest, int nYDest, int nWidth, int nHeight, 
+            [In] IntPtr hdcSrc, 
+            int nXSrc, int nYSrc, 
+            TernaryRasterOperations dwRop);
+
+        [DllImport("msimg32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        public static extern bool TransparentBlt(
+            [In] IntPtr hdcDest, 
+            int nXDest, int nYDest, int nWDest, int nHDest, 
+            [In] IntPtr hdcSrc, 
+            int nXSrc, int nYSrc, int nWSrc, int nHSrc, 
+            uint crTransparent);
         #endregion
 
         private const int KL_NAMELENGTH = 9;
@@ -218,6 +231,27 @@ namespace Caps2CtrlSpace
                     title = sb.ToString();
                 }
                 return (title);
+            }
+        }
+
+        private static void InitImeIndicatorsList()
+        {
+            InputLanguageCollection ilc = InputLanguage.InstalledInputLanguages; //获取所有安装的输入法
+            foreach (InputLanguage il in ilc)
+            {
+                var ckl = il.Culture.KeyboardLayoutId;
+                if (!InstalledKeyboardLayout.ContainsKey(ckl))
+                    InstalledKeyboardLayout.Add(ckl, il.LayoutName);
+
+                if (!ImeIndicators.ContainsKey(ckl))
+                {
+                    ImeIndicators[ckl] = new ImeIndicator();
+                    ImeIndicators[ckl].Layout = ToBW(LoadBitmap(Path.Combine(AppPath, $"{ckl}_{(int)ImeIndicatorMode.Layout}.png")));
+                    ImeIndicators[ckl].English = ToBW(LoadBitmap(Path.Combine(AppPath, $"{ckl}_{(int)ImeIndicatorMode.English}.png")));
+                    ImeIndicators[ckl].Locale = ToBW(LoadBitmap(Path.Combine(AppPath, $"{ckl}_{(int)ImeIndicatorMode.Locale}.png")));
+                    ImeIndicators[ckl].Disabled = ToBW(LoadBitmap(Path.Combine(AppPath, $"{ckl}_{(int)ImeIndicatorMode.Disabled}.png")));
+                    ImeIndicators[ckl].Close = ToBW(LoadBitmap(Path.Combine(AppPath, $"{ckl}_{(int)ImeIndicatorMode.Close}.png")));
+                }
             }
         }
 
@@ -314,6 +348,7 @@ namespace Caps2CtrlSpace
                     {
                         using (Graphics gSrc = Graphics.FromHwnd(hWnd))
                         {
+                            //gDst.FillRectangle(Brushes.Transparent, 0, 0, w, h);
                             IntPtr hdcSrc = IntPtr.Zero;
                             IntPtr hdcDst = IntPtr.Zero;
                             try
@@ -321,10 +356,8 @@ namespace Caps2CtrlSpace
                                 hdcSrc = gSrc.GetHdc();
                                 hdcDst = gDst.GetHdc();
                                 bool succeeded = BitBlt(hdcDst, 0, 0, w, h, hdcSrc, 0, 0, TernaryRasterOperations.SRCCOPY);
-                                //bool succeeded = PrintWindow(hWnd, hdcDst, 0);
-                                //gSrc.ReleaseHdc(hdcSrc);
-                                //gDst.ReleaseHdc(hdcDst);
-                                if (succeeded) result = ToGrayScale(bmp);
+                                //bool succeeded = TransparentBlt(hdcDst, 0, 0, w, h, hdcSrc, 0, 0, w, h, (uint)Color.Black.ToArgb());
+                                if (succeeded) result = (Bitmap)bmp.Clone();
                             }
                             catch
                             {
@@ -413,27 +446,6 @@ namespace Caps2CtrlSpace
                 }
             }
             return (result);
-        }
-
-        private static void InitImeIndicatorsList()
-        {
-            InputLanguageCollection ilc = InputLanguage.InstalledInputLanguages; //获取所有安装的输入法
-            foreach (InputLanguage il in ilc)
-            {
-                var ckl = il.Culture.KeyboardLayoutId;
-                if (!InstalledKeyboardLayout.ContainsKey(ckl))
-                    InstalledKeyboardLayout.Add(ckl, il.LayoutName);
-
-                if (!ImeIndicators.ContainsKey(ckl))
-                {
-                    ImeIndicators[ckl] = new ImeIndicator();
-                    ImeIndicators[ckl].Layout = ToBW(LoadBitmap(Path.Combine(AppPath, $"{ckl}_{(int)ImeIndicatorMode.Layout}.png")));
-                    ImeIndicators[ckl].English = ToBW(LoadBitmap(Path.Combine(AppPath, $"{ckl}_{(int)ImeIndicatorMode.English}.png")));
-                    ImeIndicators[ckl].Locale = ToBW(LoadBitmap(Path.Combine(AppPath, $"{ckl}_{(int)ImeIndicatorMode.Locale}.png")));
-                    ImeIndicators[ckl].Disabled = ToBW(LoadBitmap(Path.Combine(AppPath, $"{ckl}_{(int)ImeIndicatorMode.Disabled}.png")));
-                    ImeIndicators[ckl].Close = ToBW(LoadBitmap(Path.Combine(AppPath, $"{ckl}_{(int)ImeIndicatorMode.Close}.png")));
-                }
-            }
         }
 
         private static int GetConsoleKeyboardLayout()
