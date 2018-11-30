@@ -28,6 +28,8 @@ system, and with right size, maybe `22x34`,
 >>   1. `4` = Close (maybe unnecessary)
 > 1. Add contextmenu to Ime Mode & Indicator Image Control, for save 
 the Keyboard Layout Mode & Layout Indicator Image.
+> 1. Supported automatic switch to english input mode when `KeePass` 
+hot key pressed.
 
 > Note: not supported the IME "Floating Language Toolbar mode", 
 only supported embeded in System Notification Tray Area
