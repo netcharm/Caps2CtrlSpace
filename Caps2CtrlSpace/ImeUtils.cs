@@ -69,6 +69,7 @@ namespace Caps2CtrlSpace
         public Bitmap Close { get; set; } = null;
     }
 
+    public enum ImeBarState { System, Embed, Float };
     public enum ImeIndicatorMode { Layout=0, English, Locale, Disabled, Close };
 
     public enum ImeIndicatorModeN
@@ -88,7 +89,7 @@ namespace Caps2CtrlSpace
         OnHalf = 12
     };
 
-    class Ime
+    public class Ime
     {
         private static string AppPath = Path.GetDirectoryName(Assembly.GetEntryAssembly().EscapedCodeBase).Replace("file:\\", "");
 
@@ -123,6 +124,7 @@ namespace Caps2CtrlSpace
         private static extern int GetWindowTextLength(IntPtr hWnd);
 
         [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
         private static extern bool IsWindowVisible(IntPtr hWnd);
 
         [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
@@ -161,8 +163,12 @@ namespace Caps2CtrlSpace
 
         private const int KL_NAMELENGTH = 9;
 
+        private static CultureInfo[] CultureInfos = CultureInfo.GetCultures(CultureTypes.AllCultures & ~CultureTypes.NeutralCultures);
+        //CultureInfo[] CultureInfos2 = CultureInfo.GetCultures(CultureTypes.AllCultures);
+
         private static Dictionary<int, string> InstalledKeyboardLayout = new Dictionary<int, string>();
-        private static int lastKeyboardLayout = (int)SysKeyboardLayout.ENG;
+        //private static int lastKeyboardLayout = (int)SysKeyboardLayout.ENG;
+        private static int lastKeyboardLayout = InputLanguage.DefaultInputLanguage.Culture.KeyboardLayoutId;
 
         private Tuple<int, int> GetFocusKeyboardLayout()
         {
@@ -234,6 +240,37 @@ namespace Caps2CtrlSpace
             }
         }
 
+        public static Bitmap ToBW(Bitmap Bmp)
+        {
+            if (Bmp is Bitmap)
+                return (Bmp.Clone(new Rectangle(0, 0, Bmp.Width, Bmp.Height), PixelFormat.Format4bppIndexed));
+            else return null;
+        }
+
+        public static Bitmap ToGrayScale(Bitmap Bmp)
+        {
+            int rgb;
+            Color c;
+            int a = 255;
+
+            for (int y = 0; y < Bmp.Height; y++)
+            {
+                for (int x = 0; x < Bmp.Width; x++)
+                {
+                    c = Bmp.GetPixel(x, y);
+                    a = (c.R == 0 && c.G == 0 && c.B == 0) ? 0 : c.A;
+                    //a = (c.R < 0x80 && c.G < 0x80 && c.B < 0x80) ? 0 : c.A;
+                    //a = (c.R < 0x40 && c.G < 0x40 && c.B < 0x40) ? 0 : c.A;
+                    //Bmp.SetPixel(x, y, Color.FromArgb(a, c.R, c.G, c.B));
+
+                    rgb = (int)Math.Round(.299 * c.R + .587 * c.G + .114 * c.B);
+                    a = rgb < 0x80 ? 0 : c.A;
+                    Bmp.SetPixel(x, y, Color.FromArgb(a, rgb, rgb, rgb));
+                }
+            }
+            return ((Bitmap)Bmp.Clone());
+        }
+
         private static void InitImeIndicatorsList()
         {
             InputLanguageCollection ilc = InputLanguage.InstalledInputLanguages; //获取所有安装的输入法
@@ -266,12 +303,18 @@ namespace Caps2CtrlSpace
                 if (hTray != IntPtr.Zero)
                 {
                     IntPtr hInput = FindWindowEx(hTray, IntPtr.Zero, "TrayInputIndicatorWClass", null);
-                    if (hInput != IntPtr.Zero)
+                    if (hInput != IntPtr.Zero && IsWindowVisible(hInput))
                     {
                         IntPtr hIme = FindWindowEx(hInput, IntPtr.Zero, "IMEModeButton", null);
                         result = hIme;
                     }
                 }
+            }
+
+            if(result == IntPtr.Zero)
+            {
+                IntPtr hInput = FindWindowEx(IntPtr.Zero, IntPtr.Zero, "CiceroUIWndFrame", "TF_FloatingLangBar_WndTitle");
+                Console.WriteLine(hInput);
             }
 
             return (result);
@@ -288,7 +331,7 @@ namespace Caps2CtrlSpace
                 if (hTray != IntPtr.Zero)
                 {
                     IntPtr hInput = FindWindowEx(hTray, IntPtr.Zero, "TrayInputIndicatorWClass", null);
-                    if (hInput != IntPtr.Zero)
+                    if (hInput != IntPtr.Zero && IsWindowVisible(hInput))
                     {
                         IntPtr hIme = FindWindowEx(hInput, IntPtr.Zero, "InputIndicatorButton", null);
                         result = hIme;
@@ -297,37 +340,6 @@ namespace Caps2CtrlSpace
             }
 
             return (result);
-        }
-
-        public static Bitmap ToBW(Bitmap Bmp)
-        {
-            if (Bmp is Bitmap)
-                return (Bmp.Clone(new Rectangle(0, 0, Bmp.Width, Bmp.Height), PixelFormat.Format4bppIndexed));
-            else return null;
-        }
-
-        public static Bitmap ToGrayScale(Bitmap Bmp)
-        {
-            int rgb;
-            Color c;
-            int a = 255;
-
-            for (int y = 0; y < Bmp.Height; y++)
-            {
-                for (int x = 0; x < Bmp.Width; x++)
-                {
-                    c = Bmp.GetPixel(x, y);
-                    a = (c.R == 0 && c.G == 0 && c.B == 0) ? 0 : c.A;
-                    //a = (c.R < 0x80 && c.G < 0x80 && c.B < 0x80) ? 0 : c.A;
-                    //a = (c.R < 0x40 && c.G < 0x40 && c.B < 0x40) ? 0 : c.A;
-                    //Bmp.SetPixel(x, y, Color.FromArgb(a, c.R, c.G, c.B));
-
-                    rgb = (int)Math.Round(.299 * c.R + .587 * c.G + .114 * c.B);
-                    a = rgb<0x80 ? 0 : c.A;
-                    Bmp.SetPixel(x, y, Color.FromArgb(a, rgb, rgb, rgb));
-                }
-            }
-            return ((Bitmap)Bmp.Clone());
         }
 
         public static Bitmap GetSanpshot(IntPtr hWnd)
@@ -377,16 +389,20 @@ namespace Caps2CtrlSpace
 
         public static Bitmap GetImeModeBitmap()
         {
+            Bitmap result = null;
             var hWnd = GetImeModeButtonHandle();
-            var img = GetSanpshot(hWnd);
-            return(img);
+            if (hWnd != IntPtr.Zero)
+                result = GetSanpshot(hWnd);
+            return(result);
         }
 
         public static Bitmap GetInputIndicatorBitmap()
         {
+            Bitmap result = null;
             var hWnd = GetInputIndicatorButtonHandle();
-            var img = GetSanpshot(hWnd);
-            return (img);
+            if (hWnd != IntPtr.Zero)
+                result = GetSanpshot(hWnd);
+            return (result);
         }
 
         public static Bitmap LoadBitmap(string bitmapFile)
@@ -529,8 +545,6 @@ namespace Caps2CtrlSpace
                         result = ImeIndicatorMode.Locale;
                     else if (CompareBitmap(CurrentImeModeBitmap, ImeIndicators[kl].English))
                         result = ImeIndicatorMode.English;
-                    //else if (CompareBitmap(CurrentImeModeBitmap, ImeIndicators[kl].Disabled))
-                    //    result = ImeIndicatorMode.Disabled;
                 }
             }
 

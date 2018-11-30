@@ -71,6 +71,24 @@ namespace Caps2CtrlSpace
                 appSection.Settings.Add("AlwaysOnTop", chkOnTop.Checked.ToString());
                 updateConfig = true;
             }
+            try
+            {
+                chkImeAutoCloseKeePass.Checked = bool.Parse(appSection.Settings["AutoCloseKeePassIME"].Value);
+            }
+            catch
+            {
+                appSection.Settings.Add("AutoCloseKeePassIME", chkImeAutoCloseKeePass.Checked.ToString());
+                updateConfig = true;
+            }
+            try
+            {
+                edKeePassHotKey.Text = appSection.Settings["KeePassHotKey"].Value;
+            }
+            catch
+            {
+                appSection.Settings.Add("KeePassHotKey", edKeePassHotKey.Text);
+                updateConfig = true;
+            }
 
             if (updateConfig) config.Save();
             updateConfig = false;
@@ -86,6 +104,9 @@ namespace Caps2CtrlSpace
                     appSection.Settings["CapsState"].Value = chkCapsState.Checked.ToString();
                     appSection.Settings["AutoCheckImeMode"].Value = chkAutoCheckImeMode.Checked.ToString();
                     appSection.Settings["AlwaysOnTop"].Value = chkOnTop.Checked.ToString();
+                    appSection.Settings["AutoCloseKeePassIME"].Value = chkImeAutoCloseKeePass.Checked.ToString();
+                    appSection.Settings["KeePassHotKey"].Value = edKeePassHotKey.Text.Trim();
+
                     config.Save();
                 }
             }
@@ -144,6 +165,8 @@ namespace Caps2CtrlSpace
             chkCapsState.Text = Resources.strCapsState;
             chkAutoCheckImeMode.Text = Resources.strAutoCheckImeMode;
             chkOnTop.Text = Resources.strOnTop;
+            chkImeAutoCloseKeePass.Text = Resources.strImeAutoCloseKeePass;
+            lblKeePassHotKey.Text = Resources.strKeePassHotKey;
 
             tsmiImeModeEnglish.Text = Resources.strSaveAsImeModeEnglish;
             tsmiImeModeLocale.Text = Resources.strSaveAsImeModeLocale;
@@ -249,6 +272,42 @@ namespace Caps2CtrlSpace
             }
         }
 
+        private void edKeePassHotKey_PreviewKeyDown(object sender, PreviewKeyDownEventArgs e)
+        {
+            if (e.Shift && e.KeyCode == Keys.ShiftKey) return;
+            else if (e.Alt && e.KeyCode == Keys.Alt || e.KeyCode == Keys.Menu) return;
+            else if (e.Control && e.KeyCode == Keys.ControlKey) return;
+
+            var modifiers = string.Empty;
+            if (e.Modifiers != Keys.None)
+                modifiers = $"{e.Modifiers.ToString()}+";
+            //edKeePassHotKey.Text = $"{modifiers}{e.KeyCode.ToString()}";            
+        }
+
+        private void edKeePassHotKey_TextChanged(object sender, EventArgs e)
+        {
+            Keys hotkey = Keys.None;
+            var kc = new KeysConverter();
+            try
+            {
+                hotkey = (Keys)kc.ConvertFromInvariantString(edKeePassHotKey.Text);
+            }
+            catch { }
+
+            //Enum.TryParse<Keys>(edKeePassHotKey.Text, out hotkey);
+            if (hotkey != Keys.None)
+            {
+                KeyMapper.KeePassHotKey = hotkey;
+                edTest.Text = hotkey.ToString();
+            }
+            else
+            {
+                KeyMapper.KeePassHotKey = Keys.None;
+                edTest.Text = string.Empty;
+            }
+            updateConfig = true;
+        }
+
         private void tsmiShow_Click(object sender, EventArgs e)
         {
             SetHide(false);
@@ -339,21 +398,30 @@ namespace Caps2CtrlSpace
             updateConfig = true;
         }
 
+        private void chkImeAutoCloseKeePass_CheckedChanged(object sender, EventArgs e)
+        {
+            KeyMapper.AutoCloseKeePassIME = chkImeAutoCloseKeePass.Checked;
+            updateConfig = true;
+        }
+
         private void timer_Tick(object sender, EventArgs e)
         {
             if (chkCapsState.Checked)
             {
                 var currentLayout = Ime.KeyboardLayout;
                 var currentMode = Ime.Mode;
-                KeyMapper.CapsLockLightAutoCheck = chkAutoCheckImeMode.Checked;
-                KeyMapper.CurrentImeMode = currentMode;
-                try
+                if(currentMode != ImeIndicatorMode.Disabled)
                 {
-                    KeyMapper.CurrentKeyboardLayout = (SysKeyboardLayout)currentLayout;
-                }
-                catch (Exception)
-                {
-                    KeyMapper.CurrentKeyboardLayout = SysKeyboardLayout.ENG;
+                    KeyMapper.CapsLockLightAutoCheck = chkAutoCheckImeMode.Checked;
+                    KeyMapper.CurrentImeMode = currentMode;
+                    try
+                    {
+                        KeyMapper.CurrentKeyboardLayout = (SysKeyboardLayout)currentLayout;
+                    }
+                    catch (Exception)
+                    {
+                        KeyMapper.CurrentKeyboardLayout = SysKeyboardLayout.ENG;
+                    }
                 }
                 picImeMode.Image = Ime.CurrentImeModeBitmap;
                 picInputIndicator.Image = Ime.CurrentInputIndicatorBitmap;

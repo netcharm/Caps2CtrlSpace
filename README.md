@@ -29,6 +29,9 @@ system, and with right size, maybe `22x34`,
 > 1. Add contextmenu to Ime Mode & Indicator Image Control, for save 
 the Keyboard Layout Mode & Layout Indicator Image.
 
+> Note: not supported the IME "Floating Language Toolbar mode", 
+only supported embeded in System Notification Tray Area
+
 
 # 原理
 

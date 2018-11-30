@@ -138,6 +138,24 @@ namespace Caps2CtrlSpace.Properties {
         }
         
         /// <summary>
+        ///   查找类似 Auto Close IME Before KeePass HotKey Press 的本地化字符串。
+        /// </summary>
+        internal static string strImeAutoCloseKeePass {
+            get {
+                return ResourceManager.GetString("strImeAutoCloseKeePass", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 KeePass HotKey 的本地化字符串。
+        /// </summary>
+        internal static string strKeePassHotKey {
+            get {
+                return ResourceManager.GetString("strKeePassHotKey", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 Always On Top 的本地化字符串。
         /// </summary>
         internal static string strOnTop {
