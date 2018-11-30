@@ -40,10 +40,13 @@
             this.lblImeLayout = new System.Windows.Forms.Label();
             this.lblWindowText = new System.Windows.Forms.Label();
             this.grpOptions = new System.Windows.Forms.GroupBox();
+            this.lblKeePassHotKey = new System.Windows.Forms.Label();
+            this.edKeePassHotKey = new System.Windows.Forms.TextBox();
+            this.chkImeAutoCloseKeePass = new System.Windows.Forms.CheckBox();
             this.edTest = new System.Windows.Forms.TextBox();
-            this.chkOnTop = new System.Windows.Forms.CheckBox();
             this.chkAutoCheckImeMode = new System.Windows.Forms.CheckBox();
             this.chkCapsState = new System.Windows.Forms.CheckBox();
+            this.chkOnTop = new System.Windows.Forms.CheckBox();
             this.chkAutoRun = new System.Windows.Forms.CheckBox();
             this.picImeMode = new System.Windows.Forms.PictureBox();
             this.cmsImeMode = new System.Windows.Forms.ContextMenuStrip(this.components);
@@ -54,9 +57,6 @@
             this.tsmiSepInputIndicator = new System.Windows.Forms.ToolStripSeparator();
             this.tsmiInputIndicator = new System.Windows.Forms.ToolStripMenuItem();
             this.picInputIndicator = new System.Windows.Forms.PictureBox();
-            this.chkImeAutoCloseKeePass = new System.Windows.Forms.CheckBox();
-            this.edKeePassHotKey = new System.Windows.Forms.TextBox();
-            this.lblKeePassHotKey = new System.Windows.Forms.Label();
             this.cmsNotifyIcon.SuspendLayout();
             this.grpOptions.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.picImeMode)).BeginInit();
@@ -72,7 +72,7 @@
             this.lblTitle.Margin = new System.Windows.Forms.Padding(4);
             this.lblTitle.Name = "lblTitle";
             this.lblTitle.Padding = new System.Windows.Forms.Padding(4);
-            this.lblTitle.Size = new System.Drawing.Size(398, 50);
+            this.lblTitle.Size = new System.Drawing.Size(441, 50);
             this.lblTitle.TabIndex = 0;
             this.lblTitle.Text = "Convert CapsLock key to Ctrl+Space";
             this.lblTitle.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -124,7 +124,7 @@
             this.lblImeLayout.Location = new System.Drawing.Point(8, 280);
             this.lblImeLayout.Name = "lblImeLayout";
             this.lblImeLayout.Padding = new System.Windows.Forms.Padding(0, 4, 0, 0);
-            this.lblImeLayout.Size = new System.Drawing.Size(398, 31);
+            this.lblImeLayout.Size = new System.Drawing.Size(441, 31);
             this.lblImeLayout.TabIndex = 5;
             this.lblImeLayout.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
@@ -136,7 +136,7 @@
             this.lblWindowText.Margin = new System.Windows.Forms.Padding(3, 0, 3, 4);
             this.lblWindowText.Name = "lblWindowText";
             this.lblWindowText.Padding = new System.Windows.Forms.Padding(0, 0, 0, 4);
-            this.lblWindowText.Size = new System.Drawing.Size(398, 31);
+            this.lblWindowText.Size = new System.Drawing.Size(441, 31);
             this.lblWindowText.TabIndex = 6;
             this.lblWindowText.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
@@ -149,49 +149,68 @@
             this.grpOptions.Controls.Add(this.edKeePassHotKey);
             this.grpOptions.Controls.Add(this.chkImeAutoCloseKeePass);
             this.grpOptions.Controls.Add(this.edTest);
-            this.grpOptions.Controls.Add(this.chkOnTop);
             this.grpOptions.Controls.Add(this.chkAutoCheckImeMode);
             this.grpOptions.Controls.Add(this.chkCapsState);
+            this.grpOptions.Controls.Add(this.chkOnTop);
             this.grpOptions.Controls.Add(this.chkAutoRun);
             this.grpOptions.Location = new System.Drawing.Point(46, 65);
             this.grpOptions.Margin = new System.Windows.Forms.Padding(16);
             this.grpOptions.Name = "grpOptions";
             this.grpOptions.Padding = new System.Windows.Forms.Padding(8);
-            this.grpOptions.Size = new System.Drawing.Size(323, 180);
+            this.grpOptions.Size = new System.Drawing.Size(366, 180);
             this.grpOptions.TabIndex = 7;
             this.grpOptions.TabStop = false;
             this.grpOptions.Text = "Options";
             // 
+            // lblKeePassHotKey
+            // 
+            this.lblKeePassHotKey.Location = new System.Drawing.Point(12, 148);
+            this.lblKeePassHotKey.Name = "lblKeePassHotKey";
+            this.lblKeePassHotKey.Size = new System.Drawing.Size(94, 21);
+            this.lblKeePassHotKey.TabIndex = 12;
+            this.lblKeePassHotKey.Text = "KeePass HotKey";
+            this.lblKeePassHotKey.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.lblKeePassHotKey.PreviewKeyDown += new System.Windows.Forms.PreviewKeyDownEventHandler(this.edKeePassHotKey_PreviewKeyDown);
+            // 
+            // edKeePassHotKey
+            // 
+            this.edKeePassHotKey.Location = new System.Drawing.Point(112, 148);
+            this.edKeePassHotKey.Name = "edKeePassHotKey";
+            this.edKeePassHotKey.Size = new System.Drawing.Size(141, 21);
+            this.edKeePassHotKey.TabIndex = 11;
+            this.edKeePassHotKey.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.edKeePassHotKey.TextChanged += new System.EventHandler(this.edKeePassHotKey_TextChanged);
+            this.edKeePassHotKey.PreviewKeyDown += new System.Windows.Forms.PreviewKeyDownEventHandler(this.edKeePassHotKey_PreviewKeyDown);
+            // 
+            // chkImeAutoCloseKeePass
+            // 
+            this.chkImeAutoCloseKeePass.AutoSize = true;
+            this.chkImeAutoCloseKeePass.Location = new System.Drawing.Point(12, 125);
+            this.chkImeAutoCloseKeePass.Name = "chkImeAutoCloseKeePass";
+            this.chkImeAutoCloseKeePass.Size = new System.Drawing.Size(276, 16);
+            this.chkImeAutoCloseKeePass.TabIndex = 10;
+            this.chkImeAutoCloseKeePass.Text = "Auto Close IME Before KeePass HotKey Press";
+            this.chkImeAutoCloseKeePass.UseVisualStyleBackColor = true;
+            this.chkImeAutoCloseKeePass.CheckedChanged += new System.EventHandler(this.chkImeAutoCloseKeePass_CheckedChanged);
+            // 
             // edTest
             // 
             this.edTest.ImeMode = System.Windows.Forms.ImeMode.Off;
-            this.edTest.Location = new System.Drawing.Point(239, 147);
+            this.edTest.Location = new System.Drawing.Point(259, 148);
             this.edTest.Name = "edTest";
-            this.edTest.Size = new System.Drawing.Size(76, 21);
+            this.edTest.Size = new System.Drawing.Size(96, 21);
             this.edTest.TabIndex = 9;
+            this.edTest.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             this.edTest.DoubleClick += new System.EventHandler(this.edTest_DoubleClick);
-            // 
-            // chkOnTop
-            // 
-            this.chkOnTop.AutoSize = true;
-            this.chkOnTop.Dock = System.Windows.Forms.DockStyle.Top;
-            this.chkOnTop.Location = new System.Drawing.Point(8, 94);
-            this.chkOnTop.Name = "chkOnTop";
-            this.chkOnTop.Padding = new System.Windows.Forms.Padding(4);
-            this.chkOnTop.Size = new System.Drawing.Size(307, 24);
-            this.chkOnTop.TabIndex = 8;
-            this.chkOnTop.Text = "Always On Top";
-            this.chkOnTop.UseVisualStyleBackColor = true;
-            this.chkOnTop.CheckedChanged += new System.EventHandler(this.chkOnTop_CheckedChanged);
             // 
             // chkAutoCheckImeMode
             // 
             this.chkAutoCheckImeMode.AutoSize = true;
             this.chkAutoCheckImeMode.Dock = System.Windows.Forms.DockStyle.Top;
-            this.chkAutoCheckImeMode.Location = new System.Drawing.Point(8, 70);
+            this.chkAutoCheckImeMode.Location = new System.Drawing.Point(8, 94);
             this.chkAutoCheckImeMode.Name = "chkAutoCheckImeMode";
             this.chkAutoCheckImeMode.Padding = new System.Windows.Forms.Padding(4);
-            this.chkAutoCheckImeMode.Size = new System.Drawing.Size(307, 24);
+            this.chkAutoCheckImeMode.Size = new System.Drawing.Size(350, 24);
             this.chkAutoCheckImeMode.TabIndex = 7;
             this.chkAutoCheckImeMode.Text = "Auto Check IME Mode (Will increase CPU usage)";
             this.chkAutoCheckImeMode.UseVisualStyleBackColor = true;
@@ -201,14 +220,27 @@
             // 
             this.chkCapsState.AutoSize = true;
             this.chkCapsState.Dock = System.Windows.Forms.DockStyle.Top;
-            this.chkCapsState.Location = new System.Drawing.Point(8, 46);
+            this.chkCapsState.Location = new System.Drawing.Point(8, 70);
             this.chkCapsState.Name = "chkCapsState";
             this.chkCapsState.Padding = new System.Windows.Forms.Padding(4);
-            this.chkCapsState.Size = new System.Drawing.Size(307, 24);
+            this.chkCapsState.Size = new System.Drawing.Size(350, 24);
             this.chkCapsState.TabIndex = 6;
             this.chkCapsState.Text = "Enabled CapsLock Indicator Light (If Available)";
             this.chkCapsState.UseVisualStyleBackColor = true;
             this.chkCapsState.CheckedChanged += new System.EventHandler(this.chkCapsState_CheckedChanged);
+            // 
+            // chkOnTop
+            // 
+            this.chkOnTop.AutoSize = true;
+            this.chkOnTop.Dock = System.Windows.Forms.DockStyle.Top;
+            this.chkOnTop.Location = new System.Drawing.Point(8, 46);
+            this.chkOnTop.Name = "chkOnTop";
+            this.chkOnTop.Padding = new System.Windows.Forms.Padding(4);
+            this.chkOnTop.Size = new System.Drawing.Size(350, 24);
+            this.chkOnTop.TabIndex = 8;
+            this.chkOnTop.Text = "Always On Top";
+            this.chkOnTop.UseVisualStyleBackColor = true;
+            this.chkOnTop.CheckedChanged += new System.EventHandler(this.chkOnTop_CheckedChanged);
             // 
             // chkAutoRun
             // 
@@ -218,7 +250,7 @@
             this.chkAutoRun.Margin = new System.Windows.Forms.Padding(2);
             this.chkAutoRun.Name = "chkAutoRun";
             this.chkAutoRun.Padding = new System.Windows.Forms.Padding(4);
-            this.chkAutoRun.Size = new System.Drawing.Size(307, 24);
+            this.chkAutoRun.Size = new System.Drawing.Size(350, 24);
             this.chkAutoRun.TabIndex = 5;
             this.chkAutoRun.Text = "Auto Run Application When Windows Startup";
             this.chkAutoRun.UseVisualStyleBackColor = true;
@@ -298,48 +330,18 @@
             // 
             this.picInputIndicator.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.picInputIndicator.ContextMenuStrip = this.cmsImeMode;
-            this.picInputIndicator.Location = new System.Drawing.Point(378, 282);
+            this.picInputIndicator.Location = new System.Drawing.Point(421, 282);
             this.picInputIndicator.Name = "picInputIndicator";
             this.picInputIndicator.Size = new System.Drawing.Size(25, 26);
             this.picInputIndicator.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
             this.picInputIndicator.TabIndex = 9;
             this.picInputIndicator.TabStop = false;
             // 
-            // chkImeAutoCloseKeePass
-            // 
-            this.chkImeAutoCloseKeePass.AutoSize = true;
-            this.chkImeAutoCloseKeePass.Location = new System.Drawing.Point(12, 125);
-            this.chkImeAutoCloseKeePass.Name = "chkImeAutoCloseKeePass";
-            this.chkImeAutoCloseKeePass.Size = new System.Drawing.Size(276, 16);
-            this.chkImeAutoCloseKeePass.TabIndex = 10;
-            this.chkImeAutoCloseKeePass.Text = "Auto Close IME Before KeePass HotKey Press";
-            this.chkImeAutoCloseKeePass.UseVisualStyleBackColor = true;
-            this.chkImeAutoCloseKeePass.CheckedChanged += new System.EventHandler(this.chkImeAutoCloseKeePass_CheckedChanged);
-            // 
-            // edKeePassHotKey
-            // 
-            this.edKeePassHotKey.Location = new System.Drawing.Point(112, 148);
-            this.edKeePassHotKey.Name = "edKeePassHotKey";
-            this.edKeePassHotKey.Size = new System.Drawing.Size(100, 21);
-            this.edKeePassHotKey.TabIndex = 11;
-            this.edKeePassHotKey.TextChanged += new System.EventHandler(this.edKeePassHotKey_TextChanged);
-            this.edKeePassHotKey.PreviewKeyDown += new System.Windows.Forms.PreviewKeyDownEventHandler(this.edKeePassHotKey_PreviewKeyDown);
-            // 
-            // lblKeePassHotKey
-            // 
-            this.lblKeePassHotKey.Location = new System.Drawing.Point(12, 148);
-            this.lblKeePassHotKey.Name = "lblKeePassHotKey";
-            this.lblKeePassHotKey.Size = new System.Drawing.Size(94, 21);
-            this.lblKeePassHotKey.TabIndex = 12;
-            this.lblKeePassHotKey.Text = "KeePass HotKey";
-            this.lblKeePassHotKey.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            this.lblKeePassHotKey.PreviewKeyDown += new System.Windows.Forms.PreviewKeyDownEventHandler(this.edKeePassHotKey_PreviewKeyDown);
-            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
-            this.ClientSize = new System.Drawing.Size(414, 319);
+            this.ClientSize = new System.Drawing.Size(457, 319);
             this.Controls.Add(this.picInputIndicator);
             this.Controls.Add(this.picImeMode);
             this.Controls.Add(this.grpOptions);

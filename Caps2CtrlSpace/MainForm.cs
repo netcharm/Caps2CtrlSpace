@@ -46,6 +46,15 @@ namespace Caps2CtrlSpace
             }
             try
             {
+                chkOnTop.Checked = bool.Parse(appSection.Settings["AlwaysOnTop"].Value);
+            }
+            catch
+            {
+                appSection.Settings.Add("AlwaysOnTop", chkOnTop.Checked.ToString());
+                updateConfig = true;
+            }
+            try
+            {
                 chkCapsState.Checked = bool.Parse(appSection.Settings["CapsState"].Value);
             }
             catch
@@ -60,15 +69,6 @@ namespace Caps2CtrlSpace
             catch
             {
                 appSection.Settings.Add("AutoCheckImeMode", chkAutoCheckImeMode.Checked.ToString());
-                updateConfig = true;
-            }
-            try
-            {
-                chkOnTop.Checked = bool.Parse(appSection.Settings["AlwaysOnTop"].Value);
-            }
-            catch
-            {
-                appSection.Settings.Add("AlwaysOnTop", chkOnTop.Checked.ToString());
                 updateConfig = true;
             }
             try
@@ -287,23 +287,27 @@ namespace Caps2CtrlSpace
         private void edKeePassHotKey_TextChanged(object sender, EventArgs e)
         {
             Keys hotkey = Keys.None;
+            //Enum.TryParse<Keys>(edKeePassHotKey.Text, out hotkey);
+
             var kc = new KeysConverter();
             try
             {
+                var keys = edKeePassHotKey.Text.Trim().Split('+');
+                var kv = keys.Select(s => $"{s.Substring(0, 1).ToUpper()}{s.Substring(1).ToLower()}");
+                var pos = edKeePassHotKey.SelectionStart;
+                edKeePassHotKey.Text = string.Join("+", kv);
+                edKeePassHotKey.SelectionStart = pos;
                 hotkey = (Keys)kc.ConvertFromInvariantString(edKeePassHotKey.Text);
             }
             catch { }
 
-            //Enum.TryParse<Keys>(edKeePassHotKey.Text, out hotkey);
             if (hotkey != Keys.None)
             {
                 KeyMapper.KeePassHotKey = hotkey;
-                edTest.Text = hotkey.ToString();
             }
             else
             {
                 KeyMapper.KeePassHotKey = Keys.None;
-                edTest.Text = string.Empty;
             }
             updateConfig = true;
         }
@@ -380,6 +384,12 @@ namespace Caps2CtrlSpace
             }
         }
 
+        private void chkOnTop_CheckedChanged(object sender, EventArgs e)
+        {
+            this.TopMost = chkOnTop.Checked;
+            updateConfig = true;
+        }
+
         private void chkCapsState_CheckedChanged(object sender, EventArgs e)
         {
             KeyMapper.CapsLockLightEnabled = chkCapsState.Checked;
@@ -389,18 +399,23 @@ namespace Caps2CtrlSpace
 
         private void chkAutoCheckImeMode_CheckedChanged(object sender, EventArgs e)
         {
-            updateConfig = true;
-        }
-
-        private void chkOnTop_CheckedChanged(object sender, EventArgs e)
-        {
-            this.TopMost = chkOnTop.Checked;
+            if (chkAutoCheckImeMode.Checked == false)
+            {
+                chkImeAutoCloseKeePass.Enabled = false;
+                KeyMapper.AutoCloseKeePassIME = false;
+            }
+            else
+            {
+                chkImeAutoCloseKeePass.Enabled = true;
+                KeyMapper.AutoCloseKeePassIME = chkImeAutoCloseKeePass.Checked;
+            }
             updateConfig = true;
         }
 
         private void chkImeAutoCloseKeePass_CheckedChanged(object sender, EventArgs e)
         {
-            KeyMapper.AutoCloseKeePassIME = chkImeAutoCloseKeePass.Checked;
+            chkImeAutoCloseKeePass.Enabled = chkAutoCheckImeMode.Checked;
+            KeyMapper.AutoCloseKeePassIME = chkAutoCheckImeMode.Checked && chkImeAutoCloseKeePass.Enabled && chkImeAutoCloseKeePass.Checked;
             updateConfig = true;
         }
 
