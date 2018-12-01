@@ -320,17 +320,23 @@ namespace Caps2CtrlSpace
             if (Control.IsKeyLocked(Keys.CapsLock)) ToggleCapsLock();
         }
 
+        private const int KEYEVENTF_EXTENDEDKEY = 0x1;
+        private const int KEYEVENTF_KEYUP = 0x2;
         public static void ToggleCtrlSpace()
         {
             //SendKeys.SendWait("^");
-            const int KEYEVENTF_EXTENDEDKEY = 0x1;
-            const int KEYEVENTF_KEYUP = 0x2;
             keybd_event(0x11, 0, KEYEVENTF_EXTENDEDKEY, (UIntPtr)0);
             keybd_event(0x20, 0, KEYEVENTF_EXTENDEDKEY, (UIntPtr)0);
             keybd_event(0x20, 0, KEYEVENTF_EXTENDEDKEY | KEYEVENTF_KEYUP, (UIntPtr)0);
             keybd_event(0x11, 0, KEYEVENTF_EXTENDEDKEY | KEYEVENTF_KEYUP, (UIntPtr)0);
         }
         
+        public static void SendKey(Keys key)
+        {
+            keybd_event((byte)key, 0, KEYEVENTF_EXTENDEDKEY, (UIntPtr)0);
+            keybd_event((byte)key, 0, KEYEVENTF_EXTENDEDKEY | KEYEVENTF_KEYUP, (UIntPtr)0);
+        }
+
         #region Keyboard Hook
         private const int WH_KEYBOARD_LL = 13;
 
@@ -401,27 +407,15 @@ namespace Caps2CtrlSpace
                     try
                     {
                         if (CurrentKeyboardLayout == SysKeyboardLayout.CHS)
-                        {
                             SendKeys.Send("^ "); //将CapsLock转换为Ctrl+Space
-                        }
                         else if (CurrentKeyboardLayout == SysKeyboardLayout.CHT)
-                        {
-                            if (CurrentImeMode == ImeIndicatorMode.Disabled || CurrentImeMode == ImeIndicatorMode.Close)
-                                SendKeys.Send("^ "); //Open Input
                             SendKeys.Send("+");      //将CapsLock转换为Shift
-                        }
                         else if (CurrentKeyboardLayout == SysKeyboardLayout.CHK)
-                        {
                             SendKeys.Send("^ "); //将CapsLock转换为Ctrl+Space
-                        }
                         else if (CurrentKeyboardLayout == SysKeyboardLayout.JAP)
-                        {
                             SendKeys.Send("+{CAPSLOCK}"); //将CapsLock转换为Shift+CapsLock
-                        }
                         else if (CurrentKeyboardLayout == SysKeyboardLayout.KOR)
-                        {
                             SendKeys.Send("^ "); //将CapsLock转换为Ctrl+Space
-                        }
 
                         if (CapsLockLightEnabled)
                         {

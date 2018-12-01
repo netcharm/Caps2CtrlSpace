@@ -138,7 +138,7 @@ namespace Caps2CtrlSpace.Properties {
         }
         
         /// <summary>
-        ///   查找类似 Auto Close IME Before KeePass HotKey Press 的本地化字符串。
+        ///   查找类似 Auto Close IME After KeePass HotKey Press 的本地化字符串。
         /// </summary>
         internal static string strImeAutoCloseKeePass {
             get {

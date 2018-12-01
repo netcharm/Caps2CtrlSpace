@@ -170,7 +170,7 @@
     <value>..\Resources\2052_0_.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="strImeAutoCloseKeePass" xml:space="preserve">
-    <value>Auto Close IME Before KeePass HotKey Press</value>
+    <value>Auto Close IME After KeePass HotKey Press</value>
   </data>
   <data name="strKeePassHotKey" xml:space="preserve">
     <value>KeePass HotKey</value>

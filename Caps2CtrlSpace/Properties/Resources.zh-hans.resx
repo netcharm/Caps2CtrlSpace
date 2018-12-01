@@ -154,7 +154,7 @@
     <value>保存为键盘布局图像</value>
   </data>
   <data name="strImeAutoCloseKeePass" xml:space="preserve">
-    <value>按下KeePasss热键后自动切换为英文输入模式</value>
+    <value>按下 KeePass 热键后自动切换为英文输入模式</value>
   </data>
   <data name="strKeePassHotKey" xml:space="preserve">
     <value>KeePass 热键</value>
