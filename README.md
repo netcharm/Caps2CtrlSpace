@@ -14,6 +14,10 @@ startup, is re-enabled.
 layout switch, but has buggy, when you change
 input state after switch to other keyboard layout and switch back, it 
 maybe display negtived indicator light.
+> 1. Add contextmenu to Ime Mode & Indicator Image Control, for save 
+the Keyboard Layout Mode & Layout Indicator Image.
+> 1. Supported automatic switch to english input mode when `KeePass` 
+hot key pressed.
 > 1. Using snapshot the ImeModeButton window on system notification 
 area to check & compare Ime Mode in English/locale, 
 note: you must take this area image(png format) by yourself in your 
@@ -21,15 +25,11 @@ system, and with right size, maybe `22x34`,
 >> file name format: `{KeyborardLayoutCode}_{Mode}.png`, 
 >> 1. KeyborardLayoutCode displayed in application bottom like `2052`, 
 >> 1. Mode: 
->>   1. `0` = Layout
+>>   1. `0` = Layout (maybe 36x34)
 >>   1. `1` = English
 >>   1. `2` = Ime Locale
 >>   1. `3` = Disabled (maybe unnecessary) 
 >>   1. `4` = Close (maybe unnecessary)
-> 1. Add contextmenu to Ime Mode & Indicator Image Control, for save 
-the Keyboard Layout Mode & Layout Indicator Image.
-> 1. Supported automatic switch to english input mode when `KeePass` 
-hot key pressed.
 
 > Note: not supported the IME "Floating Language Toolbar mode", 
 only supported embeded in System Notification Tray Area
