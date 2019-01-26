@@ -159,7 +159,7 @@ namespace Caps2CtrlSpace
         {
             #region i18n locale UI
             this.Text = Resources.strTitleShort;
-            lblTitle.Text = Resources.strTitleLong;
+            lblTitle.Text = Resources.strTitleLong.Replace("\\n", "\n");
             grpOptions.Text = Resources.strOptions;
             chkAutoRun.Text = Resources.strAutoRun;
             chkCapsState.Text = Resources.strCapsState;
@@ -173,6 +173,9 @@ namespace Caps2CtrlSpace
             tsmiImeModeDisabled.Text = Resources.strSaveAsImeModeDisabled;
             tsmiImeModeClose.Text = Resources.strSaveAsImeModeClose;
             tsmiInputIndicator.Text = Resources.strSaveAsInputIndicator;
+
+            tsmiShow.Text = Resources.strShowMainForm;
+            tsmiExit.Text = Resources.strExit;
             #endregion
 
             Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);

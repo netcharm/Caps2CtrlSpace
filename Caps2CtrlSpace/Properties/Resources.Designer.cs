@@ -138,6 +138,15 @@ namespace Caps2CtrlSpace.Properties {
         }
         
         /// <summary>
+        ///   查找类似 Exit 的本地化字符串。
+        /// </summary>
+        internal static string strExit {
+            get {
+                return ResourceManager.GetString("strExit", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 Auto Close IME After KeePass HotKey Press 的本地化字符串。
         /// </summary>
         internal static string strImeAutoCloseKeePass {
@@ -215,6 +224,15 @@ namespace Caps2CtrlSpace.Properties {
         internal static string strSaveAsInputIndicator {
             get {
                 return ResourceManager.GetString("strSaveAsInputIndicator", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Show Window 的本地化字符串。
+        /// </summary>
+        internal static string strShowMainForm {
+            get {
+                return ResourceManager.GetString("strShowMainForm", resourceCulture);
             }
         }
         

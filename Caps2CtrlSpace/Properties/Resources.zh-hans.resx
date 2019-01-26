@@ -118,7 +118,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="strTitleLong" xml:space="preserve">
-    <value>使用Capslock大写锁定键等效Ctrl+Space切换输入法状态</value>
+    <value>使用Capslock大写锁定键等效\n按Ctrl+Space切换输入法状态</value>
   </data>
   <data name="strTitleShort" xml:space="preserve">
     <value>大写锁定键等效Ctrl+Space</value>
@@ -158,5 +158,11 @@
   </data>
   <data name="strKeePassHotKey" xml:space="preserve">
     <value>KeePass 热键</value>
+  </data>
+  <data name="strExit" xml:space="preserve">
+    <value>退出</value>
+  </data>
+  <data name="strShowMainForm" xml:space="preserve">
+    <value>显示窗口</value>
   </data>
 </root>

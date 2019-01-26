@@ -72,7 +72,7 @@
             this.lblTitle.Margin = new System.Windows.Forms.Padding(4);
             this.lblTitle.Name = "lblTitle";
             this.lblTitle.Padding = new System.Windows.Forms.Padding(4);
-            this.lblTitle.Size = new System.Drawing.Size(441, 50);
+            this.lblTitle.Size = new System.Drawing.Size(441, 48);
             this.lblTitle.TabIndex = 0;
             this.lblTitle.Text = "Convert CapsLock key to Ctrl+Space";
             this.lblTitle.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -153,11 +153,11 @@
             this.grpOptions.Controls.Add(this.chkCapsState);
             this.grpOptions.Controls.Add(this.chkOnTop);
             this.grpOptions.Controls.Add(this.chkAutoRun);
-            this.grpOptions.Location = new System.Drawing.Point(46, 65);
+            this.grpOptions.Location = new System.Drawing.Point(46, 63);
             this.grpOptions.Margin = new System.Windows.Forms.Padding(16);
             this.grpOptions.Name = "grpOptions";
             this.grpOptions.Padding = new System.Windows.Forms.Padding(8);
-            this.grpOptions.Size = new System.Drawing.Size(366, 180);
+            this.grpOptions.Size = new System.Drawing.Size(366, 184);
             this.grpOptions.TabIndex = 7;
             this.grpOptions.TabStop = false;
             this.grpOptions.Text = "Options";
@@ -185,9 +185,11 @@
             // chkImeAutoCloseKeePass
             // 
             this.chkImeAutoCloseKeePass.AutoSize = true;
-            this.chkImeAutoCloseKeePass.Location = new System.Drawing.Point(12, 125);
+            this.chkImeAutoCloseKeePass.Dock = System.Windows.Forms.DockStyle.Top;
+            this.chkImeAutoCloseKeePass.Location = new System.Drawing.Point(8, 118);
             this.chkImeAutoCloseKeePass.Name = "chkImeAutoCloseKeePass";
-            this.chkImeAutoCloseKeePass.Size = new System.Drawing.Size(276, 16);
+            this.chkImeAutoCloseKeePass.Padding = new System.Windows.Forms.Padding(4);
+            this.chkImeAutoCloseKeePass.Size = new System.Drawing.Size(350, 24);
             this.chkImeAutoCloseKeePass.TabIndex = 10;
             this.chkImeAutoCloseKeePass.Text = "Auto Close IME Before KeePass HotKey Press";
             this.chkImeAutoCloseKeePass.UseVisualStyleBackColor = true;

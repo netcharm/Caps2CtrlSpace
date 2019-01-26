@@ -175,4 +175,10 @@
   <data name="strKeePassHotKey" xml:space="preserve">
     <value>KeePass HotKey</value>
   </data>
+  <data name="strExit" xml:space="preserve">
+    <value>Exit</value>
+  </data>
+  <data name="strShowMainForm" xml:space="preserve">
+    <value>Show Window</value>
+  </data>
 </root>
