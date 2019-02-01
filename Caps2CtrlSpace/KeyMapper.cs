@@ -3,12 +3,9 @@ using Microsoft.Win32.SafeHandles;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace Caps2CtrlSpace
@@ -148,6 +145,150 @@ namespace Caps2CtrlSpace
             internal IntPtr Information;
         }
 
+        [Flags]
+        public enum ACCESS_MASK : uint
+        {
+            //
+            //  The following are masks for the predefined standard access types
+            //
+
+            DELETE                   = 0x00010000,
+            READ_CONTROL             = 0x00020000,
+            WRITE_DAC                = 0x00040000,
+            WRITE_OWNER              = 0x00080000,
+            SYNCHRONIZE              = 0x00100000,
+
+            STANDARD_RIGHTS_REQUIRED = 0x000F0000,
+
+            STANDARD_RIGHTS_READ     = 0x00020000,
+            STANDARD_RIGHTS_WRITE    = 0x00020000,
+            STANDARD_RIGHTS_EXECUTE  = 0x00020000,
+
+            STANDARD_RIGHTS_ALL      = 0x001F0000,
+
+            SPECIFIC_RIGHTS_ALL      = 0x0000FFFF,
+
+            //
+            // AccessSystemAcl access type
+            //
+
+            ACCESS_SYSTEM_SECURITY   = 0x01000000,
+
+            //
+            // MaximumAllowed access type
+            //
+
+            MAXIMUM_ALLOWED          = 0x02000000,
+
+            //
+            //  These are the generic rights.
+            //
+
+            GENERIC_READ             = 0x80000000,
+            GENERIC_WRITE            = 0x40000000,
+            GENERIC_EXECUTE          = 0x20000000,
+            GENERIC_ALL              = 0x10000000,
+
+            DESKTOP_READOBJECTS      = 0x00000001,
+            DESKTOP_CREATEWINDOW     = 0x00000002,
+            DESKTOP_CREATEMENU       = 0x00000004,
+            DESKTOP_HOOKCONTROL      = 0x00000008,
+            DESKTOP_JOURNALRECORD    = 0x00000010,
+            DESKTOP_JOURNALPLAYBACK  = 0x00000020,
+            DESKTOP_ENUMERATE        = 0x00000040,
+            DESKTOP_WRITEOBJECTS     = 0x00000080,
+            DESKTOP_SWITCHDESKTOP    = 0x00000100,
+
+            WINSTA_ENUMDESKTOPS      = 0x00000001,
+            WINSTA_READATTRIBUTES    = 0x00000002,
+            WINSTA_ACCESSCLIPBOARD   = 0x00000004,
+            WINSTA_CREATEDESKTOP     = 0x00000008,
+            WINSTA_WRITEATTRIBUTES   = 0x00000010,
+            WINSTA_ACCESSGLOBALATOMS = 0x00000020,
+            WINSTA_EXITWINDOWS       = 0x00000040,
+            WINSTA_ENUMERATE         = 0x00000100,
+            WINSTA_READSCREEN        = 0x00000200,
+
+            WINSTA_ALL_ACCESS        = 0x0000037F,
+
+
+            FILE_ANY_ACCESS           = 0x00000000, // any type
+
+            FILE_READ_ACCESS          = 0x00000001, // file & pipe
+
+            FILE_READ_DATA            = 0x00000001, // file & pipe
+            FILE_LIST_DIRECTORY       = 0x00000001, // directory
+
+            FILE_WRITE_ACCESS         = 0x00000002, // file & pipe
+
+            FILE_WRITE_DATA           = 0x00000002, // file & pipe
+            FILE_ADD_FILE             = 0x00000002, // directory
+
+            FILE_APPEND_DATA          = 0x00000004, // file
+            FILE_ADD_SUBDIRECTORY     = 0x00000004, // directory
+            FILE_CREATE_PIPE_INSTANCE = 0x00000004, // named pipe
+
+            FILE_READ_EA              = 0x00000008, // file & directory
+
+            FILE_WRITE_EA             = 0x00000010, // file & directory
+
+            FILE_EXECUTE              = 0x00000020, // file
+            FILE_TRAVERSE             = 0x00000020, // directory
+
+            FILE_DELETE_CHILD         = 0x00000040, // directory
+
+            FILE_READ_ATTRIBUTES      = 0x00000080, // all types
+
+            FILE_WRITE_ATTRIBUTES     = 0x00000100, // all types
+            
+            FILE_ALL_ACCESS           = STANDARD_RIGHTS_REQUIRED | SYNCHRONIZE | 0x1FF, // All of the preceding +
+
+            FILE_GENERIC_READ         = STANDARD_RIGHTS_READ | FILE_READ_DATA | FILE_READ_ATTRIBUTES | FILE_READ_EA | SYNCHRONIZE,
+
+            FILE_GENERIC_WRITE        = STANDARD_RIGHTS_WRITE | FILE_WRITE_DATA | FILE_WRITE_ATTRIBUTES | FILE_WRITE_EA | FILE_APPEND_DATA | SYNCHRONIZE,
+
+            FILE_GENERIC_EXECUTE      = STANDARD_RIGHTS_EXECUTE | FILE_READ_ATTRIBUTES | FILE_EXECUTE | SYNCHRONIZE,
+            
+        }
+
+        [Flags]
+        public enum CREATE_OPTION : uint
+        {
+            FILE_DIRECTORY_FILE                    = 0x00000001,
+            FILE_WRITE_THROUGH                     = 0x00000002,
+            FILE_SEQUENTIAL_ONLY                   = 0x00000004,
+            FILE_NO_INTERMEDIATE_BUFFERING         = 0x00000008,
+
+            FILE_SYNCHRONOUS_IO_ALERT              = 0x00000010,
+            FILE_SYNCHRONOUS_IO_NONALERT           = 0x00000020,
+            FILE_NON_DIRECTORY_FILE                = 0x00000040,
+            FILE_CREATE_TREE_CONNECTION            = 0x00000080,
+
+            FILE_COMPLETE_IF_OPLOCKED              = 0x00000100,
+            FILE_NO_EA_KNOWLEDGE                   = 0x00000200,
+            FILE_OPEN_REMOTE_INSTANCE              = 0x00000400,
+            FILE_RANDOM_ACCESS                     = 0x00000800,
+
+            FILE_DELETE_ON_CLOSE                   = 0x00001000,
+            FILE_OPEN_BY_FILE_ID                   = 0x00002000,
+            FILE_OPEN_FOR_BACKUP_INTENT            = 0x00004000,
+            FILE_NO_COMPRESSION                    = 0x00008000,
+
+            FILE_OPEN_REQUIRING_OPLOCK             = 0x00010000,
+            FILE_DISALLOW_EXCLUSIVE                = 0x00020000,
+
+            FILE_RESERVE_OPFILTER                  = 0x00100000,
+            FILE_OPEN_REPARSE_POINT                = 0x00200000,
+            FILE_OPEN_NO_RECALL                    = 0x00400000,
+            FILE_OPEN_FOR_FREE_SPACE_QUERY         = 0x00800000,
+
+
+            FILE_VALID_OPTION_FLAGS                = 0x00FFFFFF,
+            FILE_VALID_PIPE_OPTION_FLAGS           = 0x00000032,
+            FILE_VALID_MAILSLOT_OPTION_FLAGS       = 0x00000032,
+            FILE_VALID_SET_FLAGS                   = 0x00000036,
+        }
+
         [DllImport("ntdll.dll", ExactSpelling = true, CharSet = CharSet.Auto, SetLastError = true)]
         private static extern int ZwCreateFile(
             out SafeFileHandle handle,
@@ -165,14 +306,14 @@ namespace Caps2CtrlSpace
         [DllImport("ntdll.dll", CharSet = CharSet.Auto, ExactSpelling = true, SetLastError = true)]
         private static extern int NtCreateFile(
             out SafeFileHandle handle,
-            uint access,
+            ACCESS_MASK access,
             ref OBJECT_ATTRIBUTES objectAttributes,
             ref IO_STATUS_BLOCK ioStatus,
             ref long allocSize,
             uint fileAttributes,
             FileShare share,
             uint createDisposition,
-            uint createOptions,
+            CREATE_OPTION createOptions,
             IntPtr eaBuffer,
             uint eaLength);
 
@@ -244,16 +385,16 @@ namespace Caps2CtrlSpace
                 IO_STATUS_BLOCK ioStatusBlock = new IO_STATUS_BLOCK();
 
                 var ret = NtCreateFile(
-                    out result, 
-                    (0+0x00000100+0x00000080+0x00100000),
-                    ref objAttributes, 
-                    ref ioStatusBlock, 
-                    ref allocSize, 
-                    0, 
-                    FileShare.Read, 
+                    out result,
+                    ACCESS_MASK.FILE_ANY_ACCESS | ACCESS_MASK.FILE_READ_ATTRIBUTES | ACCESS_MASK.FILE_WRITE_ATTRIBUTES | ACCESS_MASK.SYNCHRONIZE,
+                    ref objAttributes,
+                    ref ioStatusBlock,
+                    ref allocSize,
+                    0,
+                    FileShare.Read,
                     FILE_OPEN,
-                    (0x00000040+0x00000020), 
-                    IntPtr.Zero, 
+                    CREATE_OPTION.FILE_NON_DIRECTORY_FILE | CREATE_OPTION.FILE_SYNCHRONOUS_IO_NONALERT,
+                    IntPtr.Zero,
                     0);
 
                 var err = Marshal.GetLastWin32Error();

@@ -2,7 +2,7 @@
 
 CapsLock 切换输入法中英文
 
-> __Modified by netcharm__
+__Modified by netcharm__
 1. Add CapsLock Indicator Light option, but can not auto detect IME 
 State with current input focus, so need you start with eng-input state, 
 then the light maybe turn-on when press capslock to chinese input. 
@@ -22,21 +22,28 @@ the Keyboard Layout Mode & Layout Indicator Image.
 hot key pressed.
 1. Using snapshot the ImeModeButton window on system notification 
 area to check & compare Ime Mode in English/locale, 
-note: you must take this area image(png format) by yourself in your 
-system, and with right size, maybe `22x34`, 
-file name format: `{KeyborardLayoutCode}_{Mode}.png`, 
-1. KeyborardLayoutCode displayed in application bottom like `2052`, 
-1. Mode: 
->   1. `0` = Layout (maybe 36x34)
->   1. `1` = English
->   1. `2` = Ime Locale
->   1. `3` = Disabled (maybe unnecessary) 
->   1. `4` = Close (maybe unnecessary)
+  > Notes: 
+  1. This method maybe only worked on Windows 10.
+  1. You may take this area image(png format) by yourself in your 
+system, and with right size, maybe `22x34`, replace same file in 
+zip package, file name format: `{KeyborardLayoutCode}_{Mode}.png`, 
+    1. KeyborardLayoutCode displayed in application bottom like `2052`, 
+    1. Mode: 
+       1. `0` = Layout (maybe 36x34)
+       1. `1` = English
+       1. `2` = Ime Locale
+       1. `3` = Disabled (maybe unnecessary) 
+       1. `4` = Close (maybe unnecessary)
 
-> Note: 
+> Notes: 
 1. not supported the IME "Floating Language Toolbar mode", 
 only supported embeded in System Notification Tray Area
 1. Require `Run As Administrator` for change keyboard indicator light.
+
+Ref Web Pages:
+1. [让USB键盘的LED灯听你的！（不干扰使用）](http://www.cnblogs.com/fafaly/p/3944553.html)
+1. [Keyboard LED control (capslock/numlock/scrolllock lights)](https://autohotkey.com/board/topic/9587-keyboard-led-control-capslocknumlockscrolllock-lights/page-2)
+1. [P/Invoke](https://www.pinvoke.net) for ntdll functions & data structs.
 
 # 原理
 
@@ -44,7 +51,8 @@ only supported embeded in System Notification Tray Area
 
 # 开发环境
 
-> __Modified by netcharm__
+__Modified by netcharm__
+
 1. VS2015 Express Desktop
 1. .net framework 4.6.2
  
@@ -66,8 +74,9 @@ __Modified by netcharm__
 
 启动后，会自动隐藏窗口显示在系统托盘内一个桔黄色的小点的图标。 这时候可以按capslock来切换中英文了。
  
-> Modified by netcharm
-> Sys-Tray icon changed to a composited character icon
+__Modified by netcharm__
+
+Sys-Tray icon changed to a composited character icon
 
 *自动启动*
  
