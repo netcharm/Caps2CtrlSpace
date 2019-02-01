@@ -1,4 +1,5 @@
-﻿using Microsoft.Win32.SafeHandles;
+﻿using Microsoft.Win32;
+using Microsoft.Win32.SafeHandles;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -63,35 +64,92 @@ namespace Caps2CtrlSpace
         #endregion
 
         #region Keyboard indication light functions
-        [StructLayout(LayoutKind.Sequential, Pack = 0)]
-        public struct OBJECT_ATTRIBUTES
-        {
-            public Int32 Length;
-            public IntPtr RootDirectory;
-            public IntPtr ObjectName;
-            public uint Attributes;
-            public IntPtr SecurityDescriptor;
-            public IntPtr SecurityQualityOfService;
-        }
-
-        [StructLayout(LayoutKind.Sequential, Pack = 0)]
-        public struct IO_STATUS_BLOCK
-        {
-            public uint status;
-            public IntPtr information;
-        }
-
-        [StructLayout(LayoutKind.Sequential, Pack = 0)]
-        public struct UNICODE_STRING
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+        public struct UNICODE_STRING : IDisposable
         {
             public ushort Length;
             public ushort MaximumLength;
-            public IntPtr Buffer;
+            private IntPtr buffer;
 
+            public UNICODE_STRING(string s)
+            {
+                Length = (ushort)(s.Length * 2);
+                MaximumLength = (ushort)(Length + 2);
+                buffer = Marshal.StringToHGlobalUni(s);
+            }
+
+            public void Dispose()
+            {
+                Marshal.FreeHGlobal(buffer);
+                buffer = IntPtr.Zero;
+            }
+
+            public override string ToString()
+            {
+                return Marshal.PtrToStringUni(buffer);
+            }
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct OBJECT_ATTRIBUTES : IDisposable
+        {
+            public int Length;
+            public IntPtr RootDirectory;
+            private IntPtr objectName;
+            public uint Attributes;
+            public IntPtr SecurityDescriptor;
+            public IntPtr SecurityQualityOfService;
+
+            public OBJECT_ATTRIBUTES(string name, uint attrs)
+            {
+                Length = 0;
+                RootDirectory = IntPtr.Zero;
+                objectName = IntPtr.Zero;
+                Attributes = attrs;
+                SecurityDescriptor = IntPtr.Zero;
+                SecurityQualityOfService = IntPtr.Zero;
+
+                Length = Marshal.SizeOf(this);
+                ObjectName = new UNICODE_STRING(name);
+            }
+
+            public UNICODE_STRING ObjectName
+            {
+                get
+                {
+                    return (UNICODE_STRING)Marshal.PtrToStructure(
+                     objectName, typeof(UNICODE_STRING));
+                }
+
+                set
+                {
+                    bool fDeleteOld = objectName != IntPtr.Zero;
+                    if (!fDeleteOld)
+                        objectName = Marshal.AllocHGlobal(Marshal.SizeOf(value));
+                    Marshal.StructureToPtr(value, objectName, fDeleteOld);
+                }
+            }
+
+            public void Dispose()
+            {
+                if (objectName != IntPtr.Zero)
+                {
+                    Marshal.DestroyStructure(objectName, typeof(UNICODE_STRING));
+                    Marshal.FreeHGlobal(objectName);
+                    objectName = IntPtr.Zero;
+                }
+            }
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct IO_STATUS_BLOCK
+        {
+            internal uint Status;
+            internal IntPtr Information;
         }
 
         [DllImport("ntdll.dll", ExactSpelling = true, CharSet = CharSet.Auto, SetLastError = true)]
-        public static extern int ZwCreateFile(
+        private static extern int ZwCreateFile(
             out SafeFileHandle handle,
             [MarshalAs(UnmanagedType.U4)] FileAccess access,
             ref OBJECT_ATTRIBUTES objectAttributes,
@@ -104,32 +162,26 @@ namespace Caps2CtrlSpace
             IntPtr eaBuffer,
             uint eaLength);
 
+        [DllImport("ntdll.dll", CharSet = CharSet.Auto, ExactSpelling = true, SetLastError = true)]
+        private static extern int NtCreateFile(
+            out SafeFileHandle handle,
+            uint access,
+            ref OBJECT_ATTRIBUTES objectAttributes,
+            ref IO_STATUS_BLOCK ioStatus,
+            ref long allocSize,
+            uint fileAttributes,
+            FileShare share,
+            uint createDisposition,
+            uint createOptions,
+            IntPtr eaBuffer,
+            uint eaLength);
+
         [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
         private static extern SafeFileHandle CreateFile(
              [MarshalAs(UnmanagedType.LPTStr)] string filename,
              [MarshalAs(UnmanagedType.U4)] FileAccess access,
              [MarshalAs(UnmanagedType.U4)] FileShare share,
              IntPtr securityAttributes, // optional SECURITY_ATTRIBUTES struct or IntPtr.Zero
-             [MarshalAs(UnmanagedType.U4)] FileMode creationDisposition,
-             [MarshalAs(UnmanagedType.U4)] FileAttributes flagsAndAttributes,
-             IntPtr templateFile);
-
-        [DllImport("kernel32.dll", CharSet = CharSet.Ansi, SetLastError = true)]
-        private static extern SafeFileHandle CreateFileA(
-             [MarshalAs(UnmanagedType.LPStr)] string filename,
-             [MarshalAs(UnmanagedType.U4)] FileAccess access,
-             [MarshalAs(UnmanagedType.U4)] FileShare share,
-             IntPtr securityAttributes,
-             [MarshalAs(UnmanagedType.U4)] FileMode creationDisposition,
-             [MarshalAs(UnmanagedType.U4)] FileAttributes flagsAndAttributes,
-             IntPtr templateFile);
-
-        [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
-        private static extern SafeFileHandle CreateFileW(
-             [MarshalAs(UnmanagedType.LPWStr)] string filename,
-             [MarshalAs(UnmanagedType.U4)] FileAccess access,
-             [MarshalAs(UnmanagedType.U4)] FileShare share,
-             IntPtr securityAttributes,
              [MarshalAs(UnmanagedType.U4)] FileMode creationDisposition,
              [MarshalAs(UnmanagedType.U4)] FileAttributes flagsAndAttributes,
              IntPtr templateFile);
@@ -178,113 +230,181 @@ namespace Caps2CtrlSpace
         private static uint IOCTL_KEYBOARD_SET_INDICATORS = ControlCode(FileDeviceKeyboard, 0x0002, MethodBuffered, FileAnyAccess);
         private static uint IOCTL_KEYBOARD_QUERY_TYPEMATIC = ControlCode(FileDeviceKeyboard, 0x0008, MethodBuffered, FileAnyAccess);
         private static uint IOCTL_KEYBOARD_QUERY_INDICATORS = ControlCode(FileDeviceKeyboard, 0x0010, MethodBuffered, FileAnyAccess);
-        #endregion
 
-        public static SafeFileHandle NtCreateFile(string kbName)
+        internal static SafeFileHandle NtCreateFile(string kbName)
         {
             SafeFileHandle result = new SafeFileHandle(IntPtr.Zero, true);
-            IntPtr refPtr = IntPtr.Zero;
+
             try
             {
                 long allocSize = 0;
                 uint FILE_OPEN = 0x1;
-                uint FILE_OPEN_BY_FILE_ID = 0x2000;
-                uint FILE_OPEN_FOR_BACKUP_INTENT = 0x4000;
                 uint OBJ_CASE_INSENSITIVE = 0x40;
-                IntPtr _RootHandle = IntPtr.Zero; //This will need to be initialized with the root handle, can use CreateFile from kernel32.dll
-
-                UNICODE_STRING unicodeString;
-                OBJECT_ATTRIBUTES objAttributes = new OBJECT_ATTRIBUTES(); //InitializeObjectAttributes();
+                OBJECT_ATTRIBUTES objAttributes = new OBJECT_ATTRIBUTES(kbName, OBJ_CASE_INSENSITIVE); //InitializeObjectAttributes();
                 IO_STATUS_BLOCK ioStatusBlock = new IO_STATUS_BLOCK();
 
-                IntPtr buffer = Marshal.AllocHGlobal(4096);                
-                IntPtr objAttIntPtr = Marshal.AllocHGlobal(Marshal.SizeOf(objAttributes));
-                refPtr = Marshal.StringToHGlobalUni(kbName);
-
-                unicodeString.Length = 8;
-                unicodeString.MaximumLength = 8;
-                unicodeString.Buffer = refPtr;
-                //
-                // copy unicode structure to pointer
-                //
-                Marshal.StructureToPtr(unicodeString, objAttIntPtr, true);
-
-                objAttributes.Length = Convert.ToInt32(Marshal.SizeOf(objAttributes));
-                objAttributes.ObjectName = objAttIntPtr;
-                objAttributes.RootDirectory = _RootHandle;
-                objAttributes.Attributes = OBJ_CASE_INSENSITIVE;
-                objAttributes.SecurityDescriptor = IntPtr.Zero;
-                objAttributes.SecurityQualityOfService = IntPtr.Zero;
-
-                var ret = ZwCreateFile(
+                var ret = NtCreateFile(
                     out result, 
-                    FileAccess.Write, 
+                    (0+0x00000100+0x00000080+0x00100000),
                     ref objAttributes, 
                     ref ioStatusBlock, 
                     ref allocSize, 
                     0, 
                     FileShare.Read, 
-                    FILE_OPEN, 
-                    FILE_OPEN_BY_FILE_ID | FILE_OPEN_FOR_BACKUP_INTENT, 
+                    FILE_OPEN,
+                    (0x00000040+0x00000020), 
                     IntPtr.Zero, 
                     0);
+
+                var err = Marshal.GetLastWin32Error();
             }
             finally
             {
-                Marshal.FreeHGlobal(refPtr);
+            }
+
+            return (result);
+        }
+        #endregion
+
+        public static List<string> GetKeyboardList()
+        {
+            List<string> result = new List<string>();
+
+            try
+            {
+                using (RegistryKey rk = Registry.LocalMachine.OpenSubKey("HARDWARE\\DEVICEMAP\\KeyboardClass", false))
+                {
+                    var names = rk.GetValueNames();
+                    result = names.ToList();
+                    rk.Close();
+                }
+            }
+            catch (Exception exception)
+            {
+                MessageBox.Show("Failed," + exception.Message);
             }
 
             return (result);
         }
 
-        public static void SetLights(LockLights locks, LockLightsOp op = LockLightsOp.Toggle)
+        public static bool SetLights(LockLights locks, LockLightsOp op = LockLightsOp.Toggle)
         {
-            DefineDosDevice(DddRawTargetPath, "keyboard", "\\Device\\KeyboardClass0");
+            bool result = false;
+
+            DefineDosDevice(DddRawTargetPath, "keyboard0", "\\Device\\KeyboardClass0");
 
             var indicatorsIn = new KeyboardIndicatorParameters() { UnitId = 0, LedFlags = LockLights.None };
             var indicatorsOut = new KeyboardIndicatorParameters() { UnitId = 0, LedFlags = LockLights.None };
 
             //using (var hKeybd = NtCreateFile("\\\\.\\keyboard"))
-            using (var hKeybd = CreateFile("\\\\.\\keyboard", FileAccess.Write, 0, IntPtr.Zero, FileMode.Open, 0, IntPtr.Zero))
+            using (var hKeybd = CreateFile("\\\\.\\keyboard0", FileAccess.Write, 0, IntPtr.Zero, FileMode.Open, 0, IntPtr.Zero))
             {
-                var size = Marshal.SizeOf(typeof(KeyboardIndicatorParameters));
-                int bytesReturned = 0;
-
-                if (DeviceIoControl(hKeybd, (int)IOCTL_KEYBOARD_QUERY_INDICATORS, ref indicatorsOut, size, ref indicatorsOut, size, out bytesReturned, IntPtr.Zero))
+                if (!hKeybd.IsInvalid)
                 {
-                    if (op == LockLightsOp.Toggle)
+                    var size = Marshal.SizeOf(typeof(KeyboardIndicatorParameters));
+                    int bytesReturned = 0;
+
+                    if (DeviceIoControl(hKeybd, (int)IOCTL_KEYBOARD_QUERY_INDICATORS, ref indicatorsOut, size, ref indicatorsOut, size, out bytesReturned, IntPtr.Zero))
                     {
-                        if (indicatorsOut.LedFlags.HasFlag(locks))
-                            indicatorsIn.LedFlags = indicatorsOut.LedFlags & ~locks;
-                        else
+                        if (op == LockLightsOp.Toggle)
+                        {
+                            if (indicatorsOut.LedFlags.HasFlag(locks))
+                                indicatorsIn.LedFlags = indicatorsOut.LedFlags & ~locks;
+                            else
+                                indicatorsIn.LedFlags = indicatorsOut.LedFlags | locks;
+                        }
+                        else if (op == LockLightsOp.On)
+                        {
                             indicatorsIn.LedFlags = indicatorsOut.LedFlags | locks;
+                        }
+                        else if (op == LockLightsOp.Off)
+                        {
+                            indicatorsIn.LedFlags = indicatorsOut.LedFlags & ~locks;
+                        }
+                        var retS = DeviceIoControl(hKeybd, (int)IOCTL_KEYBOARD_SET_INDICATORS, ref indicatorsIn, size, ref indicatorsOut, size, out bytesReturned, IntPtr.Zero);
+                        result = retS;
                     }
-                    else if (op == LockLightsOp.On)
-                    {
-                        indicatorsIn.LedFlags = indicatorsOut.LedFlags | locks;
-                    }
-                    else if (op == LockLightsOp.Off)
-                    {
-                        indicatorsIn.LedFlags = indicatorsOut.LedFlags & ~locks;
-                    }
-                    var retS = DeviceIoControl(hKeybd, (int)IOCTL_KEYBOARD_SET_INDICATORS, ref indicatorsIn, size, ref indicatorsOut, size, out bytesReturned, IntPtr.Zero);
                 }
             }
+
+            return (result);
+        }
+
+        public static bool SetKbdLights(LockLights locks, LockLightsOp op = LockLightsOp.Toggle)
+        {
+            bool result = false;
+
+            //return (SetLights(locks, op));
+
+            var indicatorsIn = new KeyboardIndicatorParameters() { UnitId = 0, LedFlags = LockLights.None };
+            var indicatorsOut = new KeyboardIndicatorParameters() { UnitId = 0, LedFlags = LockLights.None };
+
+            var kbds = GetKeyboardList();
+
+            //int start = 0;
+            //if (SetLights(locks, op)) start = 1;
+            //for (int i = start; i < 16; i++)
+            foreach (var kbd in kbds)
+            {
+                //using (var hKeybd = NtCreateFile($"\\Device\\KeyboardClass{i}"))
+                using (var hKeybd = NtCreateFile(kbd))
+                {
+                    if (!hKeybd.IsInvalid)
+                    {
+                        var size = Marshal.SizeOf(typeof(KeyboardIndicatorParameters));
+                        int bytesReturned = 0;
+
+                        if (DeviceIoControl(hKeybd, (int)IOCTL_KEYBOARD_QUERY_INDICATORS,
+                                            ref indicatorsOut, size,
+                                            ref indicatorsOut, size,
+                                            out bytesReturned,
+                                            IntPtr.Zero))
+                        {
+                            if (op == LockLightsOp.Toggle)
+                            {
+                                if (indicatorsOut.LedFlags.HasFlag(locks))
+                                    indicatorsIn.LedFlags = indicatorsOut.LedFlags & ~locks;
+                                else
+                                    indicatorsIn.LedFlags = indicatorsOut.LedFlags | locks;
+                            }
+                            else if (op == LockLightsOp.On)
+                            {
+                                indicatorsIn.LedFlags = indicatorsOut.LedFlags | locks;
+                            }
+                            else if (op == LockLightsOp.Off)
+                            {
+                                indicatorsIn.LedFlags = indicatorsOut.LedFlags & ~locks;
+                            }
+                            var retS = DeviceIoControl(hKeybd, (int)IOCTL_KEYBOARD_SET_INDICATORS,
+                                                        ref indicatorsIn, size,
+                                                        ref indicatorsOut, size,
+                                                        out bytesReturned,
+                                                        IntPtr.Zero);
+                            result = retS || result;
+                        }
+                    }
+                }
+            }
+
+            return (result);
         }
 
         public static void CapsLockLightOn()
         {
-            SetLights(LockLights.KeyboardCapsLockOn, LockLightsOp.On);
+            //SetLights(LockLights.KeyboardCapsLockOn, LockLightsOp.On);
+            SetKbdLights(LockLights.KeyboardCapsLockOn, LockLightsOp.On);
         }
 
         public static void CapsLockLightOff()
         {
-            SetLights(LockLights.KeyboardCapsLockOn, LockLightsOp.Off);
+            //SetLights(LockLights.KeyboardCapsLockOn, LockLightsOp.Off);
+            SetKbdLights(LockLights.KeyboardCapsLockOn, LockLightsOp.Off);
         }
 
         public static void CapsLockLightToggle()
         {
-            SetLights(LockLights.KeyboardCapsLockOn, LockLightsOp.Toggle);
+            //SetLights(LockLights.KeyboardCapsLockOn, LockLightsOp.Toggle);
+            SetKbdLights(LockLights.KeyboardCapsLockOn, LockLightsOp.Toggle);
         }
 
         public static void CapsLockLightAuto()

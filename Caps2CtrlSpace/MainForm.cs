@@ -369,17 +369,15 @@ namespace Caps2CtrlSpace
         {
             try
             {
-                RegistryKey rk = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
-
-                if (chkAutoRun.Checked)
+                using (RegistryKey rk = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true))
                 {
-                    rk.SetValue(AppName, Application.ExecutablePath.ToString());
+                    if (chkAutoRun.Checked)
+                        rk.SetValue(AppName, Application.ExecutablePath.ToString());
+                    else
+                        rk.DeleteValue(AppName);
+                    rk.Close();
+                    updateConfig = true;
                 }
-                else
-                {
-                    rk.DeleteValue(AppName);
-                }
-                updateConfig = true;
             }
             catch (Exception exception)
             {
