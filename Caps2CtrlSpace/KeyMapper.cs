@@ -346,9 +346,9 @@ namespace Caps2CtrlSpace
         public enum LockLights : ushort
         {
             None = 0,
-            KeyboardScrollLockOn = 1,
-            KeyboardNumLockOn = 2,
-            KeyboardCapsLockOn = 4
+            ScrollLock = 1,
+            NumLock = 2,
+            CapsLock = 4
         }
         public enum LockLightsOp { Toggle, On, Off };
 
@@ -422,23 +422,27 @@ namespace Caps2CtrlSpace
             }
             catch (Exception exception)
             {
-                MessageBox.Show("Failed," + exception.Message);
+                MessageBox.Show("RegScan Failed, using default names" + exception.Message);
+                for(int i = 0; i < 16; i++)
+                {
+                    result.Add($"\\Device\\KeyboardClass{i}");
+                }
             }
 
             return (result);
         }
 
-        public static bool SetLights(LockLights locks, LockLightsOp op = LockLightsOp.Toggle)
+        public static bool SetLights(int idx, LockLights locks, LockLightsOp op = LockLightsOp.Toggle)
         {
             bool result = false;
 
-            DefineDosDevice(DddRawTargetPath, "keyboard0", "\\Device\\KeyboardClass0");
+            DefineDosDevice(DddRawTargetPath, $"keyboard{idx}", $"\\Device\\KeyboardClass{idx}");
 
             var indicatorsIn = new KeyboardIndicatorParameters() { UnitId = 0, LedFlags = LockLights.None };
             var indicatorsOut = new KeyboardIndicatorParameters() { UnitId = 0, LedFlags = LockLights.None };
 
             //using (var hKeybd = NtCreateFile("\\\\.\\keyboard"))
-            using (var hKeybd = CreateFile("\\\\.\\keyboard0", FileAccess.Write, 0, IntPtr.Zero, FileMode.Open, 0, IntPtr.Zero))
+            using (var hKeybd = CreateFile($"\\\\.\\keyboard{idx}", FileAccess.Write, 0, IntPtr.Zero, FileMode.Open, 0, IntPtr.Zero))
             {
                 if (!hKeybd.IsInvalid)
                 {
@@ -471,7 +475,7 @@ namespace Caps2CtrlSpace
             return (result);
         }
 
-        public static bool SetKbdLights(LockLights locks, LockLightsOp op = LockLightsOp.Toggle)
+        public static bool SetKeyboardLights(LockLights locks, LockLightsOp op = LockLightsOp.Toggle)
         {
             bool result = false;
 
@@ -532,20 +536,20 @@ namespace Caps2CtrlSpace
 
         public static void CapsLockLightOn()
         {
-            //SetLights(LockLights.KeyboardCapsLockOn, LockLightsOp.On);
-            SetKbdLights(LockLights.KeyboardCapsLockOn, LockLightsOp.On);
+            //SetLights(LockLights.CapsLock, LockLightsOp.On);
+            SetKeyboardLights(LockLights.CapsLock, LockLightsOp.On);
         }
 
         public static void CapsLockLightOff()
         {
-            //SetLights(LockLights.KeyboardCapsLockOn, LockLightsOp.Off);
-            SetKbdLights(LockLights.KeyboardCapsLockOn, LockLightsOp.Off);
+            //SetLights(LockLights.CapsLock, LockLightsOp.Off);
+            SetKeyboardLights(LockLights.CapsLock, LockLightsOp.Off);
         }
 
         public static void CapsLockLightToggle()
         {
-            //SetLights(LockLights.KeyboardCapsLockOn, LockLightsOp.Toggle);
-            SetKbdLights(LockLights.KeyboardCapsLockOn, LockLightsOp.Toggle);
+            //SetLights(LockLights.CapsLock, LockLightsOp.Toggle);
+            SetKeyboardLights(LockLights.CapsLock, LockLightsOp.Toggle);
         }
 
         public static void CapsLockLightAuto()

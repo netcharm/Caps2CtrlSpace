@@ -159,7 +159,50 @@ namespace Caps2CtrlSpace
             [In] IntPtr hdcSrc, 
             int nXSrc, int nYSrc, int nWSrc, int nHSrc, 
             uint crTransparent);
+
+        // 创建结构体用于返回捕获时间  
+        [StructLayout(LayoutKind.Sequential)]
+        struct LASTINPUTINFO
+        {
+            // 设置结构体块容量  
+            [MarshalAs(UnmanagedType.U4)]
+            public int cbSize;
+            // 捕获的时间  
+            [MarshalAs(UnmanagedType.U4)]
+            public uint dwTime;
+        }
+
+        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        private static extern bool GetLastInputInfo(ref LASTINPUTINFO plii);
         #endregion
+
+        //获取键盘和鼠标没有操作的时间  
+        public static uint GetLastInputTime()
+        {
+            uint idleTime = 0;
+            LASTINPUTINFO lastInputInfo = new LASTINPUTINFO();
+            lastInputInfo.cbSize = Marshal.SizeOf(lastInputInfo);
+            lastInputInfo.dwTime = 0;
+
+            uint envTicks = (uint)Environment.TickCount;
+
+            if (GetLastInputInfo(ref lastInputInfo))
+            {
+                uint lastInputTick = lastInputInfo.dwTime;
+
+                idleTime = envTicks - lastInputTick;
+            }
+
+            return ((idleTime > 0) ? (idleTime / 1000) : 0);
+
+            //LASTINPUTINFO vLastInputInfo = new LASTINPUTINFO();
+            //vLastInputInfo.cbSize = Marshal.SizeOf(vLastInputInfo);
+            //// 捕获时间  
+            //if (!GetLastInputInfo(ref vLastInputInfo))
+            //    return 0;
+            //else
+            //    return Environment.TickCount - (long)vLastInputInfo.dwTime;
+        }
 
         private const int KL_NAMELENGTH = 9;
 

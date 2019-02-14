@@ -422,6 +422,7 @@ namespace Caps2CtrlSpace
 
         private void timer_Tick(object sender, EventArgs e)
         {
+            if (Ime.GetLastInputTime() > 1) return;
             if (chkCapsState.Checked)
             {
                 var currentLayout = Ime.KeyboardLayout;
