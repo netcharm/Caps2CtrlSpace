@@ -29,12 +29,14 @@ namespace Caps2CtrlSpace
         private static Configuration config;
         private AppSettingsSection appSection;
 
+        private bool loadingConfig = false;
         private bool updateConfig = false;
 
         private const string AppName = "Caps2CtrlSpace";
 
         private void LoadConfig()
         {
+            loadingConfig = true;
             try
             {
                 chkAutoRun.Checked = bool.Parse(appSection.Settings["AutoRun"].Value);
@@ -101,12 +103,14 @@ namespace Caps2CtrlSpace
 
             if (updateConfig) config.Save();
             updateConfig = false;
+            loadingConfig = false;
         }
 
         private void SaveConfig(bool force = false)
         {
             try
             {
+                if (loadingConfig) return;
                 if (updateConfig || force)
                 {
                     appSection.Settings["AutoRun"].Value = chkAutoRun.Checked.ToString();
@@ -300,31 +304,34 @@ namespace Caps2CtrlSpace
 
         private void edKeePassHotKey_TextChanged(object sender, EventArgs e)
         {
-            Keys hotkey = Keys.None;
-            //Enum.TryParse<Keys>(edKeePassHotKey.Text, out hotkey);
+            if (sender == edKeePassHotKey)
+            {
+                Keys hotkey = Keys.None;
+                //Enum.TryParse<Keys>(edKeePassHotKey.Text, out hotkey);
 
-            var kc = new KeysConverter();
-            try
-            {
-                var keys = edKeePassHotKey.Text.Trim().Split('+');
-                var kv = keys.Select(s => $"{s.Substring(0, 1).ToUpper()}{s.Substring(1).ToLower()}");
-                var pos = edKeePassHotKey.SelectionStart;
-                edKeePassHotKey.Text = string.Join("+", kv);
-                edKeePassHotKey.SelectionStart = pos;
-                hotkey = (Keys)kc.ConvertFromInvariantString(edKeePassHotKey.Text);
-            }
-            catch { }
+                var kc = new KeysConverter();
+                try
+                {
+                    var keys = edKeePassHotKey.Text.Trim().Split('+');
+                    var kv = keys.Select(s => $"{s.Substring(0, 1).ToUpper()}{s.Substring(1).ToLower()}");
+                    var pos = edKeePassHotKey.SelectionStart;
+                    edKeePassHotKey.Text = string.Join("+", kv);
+                    edKeePassHotKey.SelectionStart = pos;
+                    hotkey = (Keys)kc.ConvertFromInvariantString(edKeePassHotKey.Text);
+                }
+                catch { }
 
-            if (hotkey != Keys.None)
-            {
-                KeyMapper.KeePassHotKey = hotkey;
+                if (hotkey != Keys.None)
+                {
+                    KeyMapper.KeePassHotKey = hotkey;
+                }
+                else
+                {
+                    KeyMapper.KeePassHotKey = Keys.None;
+                }
+                updateConfig = true;
+                SaveConfig(updateConfig);
             }
-            else
-            {
-                KeyMapper.KeePassHotKey = Keys.None;
-            }
-            updateConfig = true;
-            SaveConfig(updateConfig);
         }
 
         private void edAutoCheckInterval_ValueChanged(object sender, EventArgs e)
@@ -391,62 +398,77 @@ namespace Caps2CtrlSpace
 
         private void chkAutoRun_CheckedChanged(object sender, EventArgs e)
         {
-            try
+            if (sender == chkAutoRun)
             {
-                using (RegistryKey rk = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true))
+                try
                 {
-                    if (chkAutoRun.Checked)
-                        rk.SetValue(AppName, Application.ExecutablePath.ToString());
-                    else
-                        rk.DeleteValue(AppName);
-                    rk.Close();
-                    updateConfig = true;
-                    SaveConfig(updateConfig);
+                    using (RegistryKey rk = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true))
+                    {
+                        if (chkAutoRun.Checked)
+                            rk.SetValue(AppName, Application.ExecutablePath.ToString());
+                        else
+                            rk.DeleteValue(AppName);
+                        rk.Close();
+                        updateConfig = true;
+                        SaveConfig(updateConfig);
+                    }
                 }
-            }
-            catch (Exception exception)
-            {
-                MessageBox.Show("Failed," + exception.Message);
+                catch (Exception exception)
+                {
+                    MessageBox.Show("Failed," + exception.Message);
+                }
             }
         }
 
         private void chkOnTop_CheckedChanged(object sender, EventArgs e)
         {
-            this.TopMost = chkOnTop.Checked;
-            updateConfig = true;
-            SaveConfig(updateConfig);
+            if (sender == chkOnTop)
+            {
+                this.TopMost = chkOnTop.Checked;
+                updateConfig = true;
+                SaveConfig(updateConfig);
+            }
         }
 
         private void chkCapsState_CheckedChanged(object sender, EventArgs e)
         {
-            KeyMapper.CapsLockLightEnabled = chkCapsState.Checked;
-            timer.Enabled = chkCapsState.Checked;
-            updateConfig = true;
-            SaveConfig(updateConfig);
+            if (sender == chkCapsState)
+            {
+                KeyMapper.CapsLockLightEnabled = chkCapsState.Checked;
+                timer.Enabled = chkCapsState.Checked;
+                updateConfig = true;
+                SaveConfig(updateConfig);
+            }
         }
 
         private void chkAutoCheckImeMode_CheckedChanged(object sender, EventArgs e)
         {
-            if (chkAutoCheckImeMode.Checked == false)
+            if (sender == chkAutoCheckImeMode)
             {
-                chkImeAutoCloseKeePass.Enabled = false;
-                KeyMapper.AutoCloseKeePassIME = false;
+                if (chkAutoCheckImeMode.Checked == false)
+                {
+                    chkImeAutoCloseKeePass.Enabled = false;
+                    KeyMapper.AutoCloseKeePassIME = false;
+                }
+                else
+                {
+                    chkImeAutoCloseKeePass.Enabled = true;
+                    KeyMapper.AutoCloseKeePassIME = chkImeAutoCloseKeePass.Checked;
+                }
+                updateConfig = true;
+                SaveConfig(updateConfig);
             }
-            else
-            {
-                chkImeAutoCloseKeePass.Enabled = true;
-                KeyMapper.AutoCloseKeePassIME = chkImeAutoCloseKeePass.Checked;
-            }
-            updateConfig = true;
-            SaveConfig(updateConfig);
         }
 
         private void chkImeAutoCloseKeePass_CheckedChanged(object sender, EventArgs e)
         {
-            chkImeAutoCloseKeePass.Enabled = chkAutoCheckImeMode.Checked;
-            KeyMapper.AutoCloseKeePassIME = chkAutoCheckImeMode.Checked && chkImeAutoCloseKeePass.Enabled && chkImeAutoCloseKeePass.Checked;
-            updateConfig = true;
-            SaveConfig(updateConfig);
+            if (sender == chkImeAutoCloseKeePass)
+            {
+                chkImeAutoCloseKeePass.Enabled = chkAutoCheckImeMode.Checked;
+                KeyMapper.AutoCloseKeePassIME = chkAutoCheckImeMode.Checked && chkImeAutoCloseKeePass.Enabled && chkImeAutoCloseKeePass.Checked;
+                updateConfig = true;
+                SaveConfig(updateConfig);
+            }
         }
 
         private void timer_Tick(object sender, EventArgs e)
