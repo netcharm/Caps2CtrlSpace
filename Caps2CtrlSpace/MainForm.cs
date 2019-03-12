@@ -73,6 +73,15 @@ namespace Caps2CtrlSpace
             }
             try
             {
+                edAutoCheckInterval.Value = int.Parse(appSection.Settings["AutoCheckInterval"].Value);
+            }
+            catch
+            {
+                appSection.Settings.Add("AutoCheckInterval", edAutoCheckInterval.Value.ToString());
+                updateConfig = true;
+            }
+            try
+            {
                 chkImeAutoCloseKeePass.Checked = bool.Parse(appSection.Settings["AutoCloseKeePassIME"].Value);
             }
             catch
@@ -103,6 +112,7 @@ namespace Caps2CtrlSpace
                     appSection.Settings["AutoRun"].Value = chkAutoRun.Checked.ToString();
                     appSection.Settings["CapsState"].Value = chkCapsState.Checked.ToString();
                     appSection.Settings["AutoCheckImeMode"].Value = chkAutoCheckImeMode.Checked.ToString();
+                    appSection.Settings["AutoCheckInterval"].Value = edAutoCheckInterval.Value.ToString();
                     appSection.Settings["AlwaysOnTop"].Value = chkOnTop.Checked.ToString();
                     appSection.Settings["AutoCloseKeePassIME"].Value = chkImeAutoCloseKeePass.Checked.ToString();
                     appSection.Settings["KeePassHotKey"].Value = edKeePassHotKey.Text.Trim();
@@ -450,5 +460,14 @@ namespace Caps2CtrlSpace
             }
         }
 
+        private void edAutoCheckInterval_ValueChanged(object sender, EventArgs e)
+        {
+            if(sender == edAutoCheckInterval)
+            {
+                timer.Stop();
+                timer.Interval = Convert.ToInt32(edAutoCheckInterval.Value);
+                timer.Start();
+            }
+        }
     }
 }
