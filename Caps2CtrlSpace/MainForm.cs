@@ -103,11 +103,11 @@ namespace Caps2CtrlSpace
             updateConfig = false;
         }
 
-        private void SaveConfig()
+        private void SaveConfig(bool force = false)
         {
             try
             {
-                if (updateConfig)
+                if (updateConfig || force)
                 {
                     appSection.Settings["AutoRun"].Value = chkAutoRun.Checked.ToString();
                     appSection.Settings["CapsState"].Value = chkCapsState.Checked.ToString();
@@ -118,6 +118,7 @@ namespace Caps2CtrlSpace
                     appSection.Settings["KeePassHotKey"].Value = edKeePassHotKey.Text.Trim();
 
                     config.Save();
+                    updateConfig = false;
                 }
             }
             catch
@@ -323,6 +324,19 @@ namespace Caps2CtrlSpace
                 KeyMapper.KeePassHotKey = Keys.None;
             }
             updateConfig = true;
+            SaveConfig(updateConfig);
+        }
+
+        private void edAutoCheckInterval_ValueChanged(object sender, EventArgs e)
+        {
+            if (sender == edAutoCheckInterval)
+            {
+                timer.Stop();
+                timer.Interval = Convert.ToInt32(edAutoCheckInterval.Value);
+                timer.Start();
+                updateConfig = true;
+                SaveConfig(updateConfig);
+            }
         }
 
         private void tsmiShow_Click(object sender, EventArgs e)
@@ -387,6 +401,7 @@ namespace Caps2CtrlSpace
                         rk.DeleteValue(AppName);
                     rk.Close();
                     updateConfig = true;
+                    SaveConfig(updateConfig);
                 }
             }
             catch (Exception exception)
@@ -399,6 +414,7 @@ namespace Caps2CtrlSpace
         {
             this.TopMost = chkOnTop.Checked;
             updateConfig = true;
+            SaveConfig(updateConfig);
         }
 
         private void chkCapsState_CheckedChanged(object sender, EventArgs e)
@@ -406,6 +422,7 @@ namespace Caps2CtrlSpace
             KeyMapper.CapsLockLightEnabled = chkCapsState.Checked;
             timer.Enabled = chkCapsState.Checked;
             updateConfig = true;
+            SaveConfig(updateConfig);
         }
 
         private void chkAutoCheckImeMode_CheckedChanged(object sender, EventArgs e)
@@ -421,6 +438,7 @@ namespace Caps2CtrlSpace
                 KeyMapper.AutoCloseKeePassIME = chkImeAutoCloseKeePass.Checked;
             }
             updateConfig = true;
+            SaveConfig(updateConfig);
         }
 
         private void chkImeAutoCloseKeePass_CheckedChanged(object sender, EventArgs e)
@@ -428,6 +446,7 @@ namespace Caps2CtrlSpace
             chkImeAutoCloseKeePass.Enabled = chkAutoCheckImeMode.Checked;
             KeyMapper.AutoCloseKeePassIME = chkAutoCheckImeMode.Checked && chkImeAutoCloseKeePass.Enabled && chkImeAutoCloseKeePass.Checked;
             updateConfig = true;
+            SaveConfig(updateConfig);
         }
 
         private void timer_Tick(object sender, EventArgs e)
@@ -460,14 +479,5 @@ namespace Caps2CtrlSpace
             }
         }
 
-        private void edAutoCheckInterval_ValueChanged(object sender, EventArgs e)
-        {
-            if(sender == edAutoCheckInterval)
-            {
-                timer.Stop();
-                timer.Interval = Convert.ToInt32(edAutoCheckInterval.Value);
-                timer.Start();
-            }
-        }
     }
 }
