@@ -474,13 +474,13 @@ namespace Caps2CtrlSpace
         private void timer_Tick(object sender, EventArgs e)
         {
             if (Ime.GetLastInputTime() > 1) return;
-            if (chkCapsState.Checked)
+            if (chkCapsState.Checked || chkAutoCheckImeMode.Checked)
             {
                 var currentLayout = Ime.KeyboardLayout;
                 var currentMode = Ime.Mode;
                 if(currentMode != ImeIndicatorMode.Disabled)
                 {
-                    KeyMapper.CapsLockLightAutoCheck = chkAutoCheckImeMode.Checked;
+                    KeyMapper.CapsLockLightAutoCheck = chkCapsState.Checked;
                     KeyMapper.CurrentImeMode = currentMode;
                     try
                     {

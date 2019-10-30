@@ -606,7 +606,9 @@ namespace Caps2CtrlSpace
         private const int WH_KEYBOARD_LL = 13;
 
         private const int WM_KEYDOWN = 0x0100;
+        private const int WM_KEYUP = 0x0101;
         private const int WM_SYSKEYDOWN = 0x0104;
+        private const int WM_SYSKEYUP = 0x0105;
 
         private static SysKeyboardLayout[] CapsLockEnabledLayout = new SysKeyboardLayout[] {
             SysKeyboardLayout.CHS,
@@ -618,80 +620,105 @@ namespace Caps2CtrlSpace
 
         private static IntPtr _keyboardHookID = IntPtr.Zero;
 
+        private static int last_keydown = 0;
         private static IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam)
         {
-            if (nCode >= 0 && wParam == (IntPtr)WM_KEYDOWN && CurrentImeMode != ImeIndicatorMode.Disabled && CapsLockEnabledLayout.Contains(CurrentKeyboardLayout))
+            if (nCode >= 0 && (wParam == (IntPtr)WM_KEYDOWN || wParam == (IntPtr)WM_SYSKEYDOWN) && CurrentImeMode != ImeIndicatorMode.Disabled && CapsLockEnabledLayout.Contains(CurrentKeyboardLayout))
+//            {
+//                var kbd = (KBDLLHOOKSTRUCT)Marshal.PtrToStructure(lParam, typeof(KBDLLHOOKSTRUCT));
+//                int vkCode = kbd.vkCode; //Marshal.ReadInt32(lParam);
+//                if (kbd.flags != 0)
+//                    last_keydown = kbd.time;
+//#if DEBUG
+//                Console.WriteLine($"KeyDown: {vkCode}, {kbd.scanCode}, {kbd.flags}, {kbd.dwExtraInfo}, {last_keydown}, {CurrentKeyboardLayout}, {wParam}");
+//#endif
+//            }
+//            else if (nCode >= 0 && (wParam == (IntPtr)WM_KEYUP || wParam == (IntPtr)WM_SYSKEYUP) && CurrentImeMode != ImeIndicatorMode.Disabled && CapsLockEnabledLayout.Contains(CurrentKeyboardLayout))
             {
                 var kbd = (KBDLLHOOKSTRUCT)Marshal.PtrToStructure(lParam, typeof(KBDLLHOOKSTRUCT));
                 int vkCode = kbd.vkCode; //Marshal.ReadInt32(lParam);
+                int timestamp = kbd.time;
+                //if (timestamp - last_keydown > 2000)
+                //{
+                //    ToggleCapsLock();
+                //}
+                //else if (timestamp - last_keydown < 1000 || last_keydown == 0)
+                //if (timestamp - last_keydown < 1000 || last_keydown == 0)
+                //if(timestamp - last_keydown <= 32 || last_keydown == 0)
+                {
 #if DEBUG
-                Console.WriteLine($"KeyCode: {vkCode}, {kbd.flags}, {CurrentKeyboardLayout}");
+                    Console.WriteLine($"KeyDown: {vkCode}, {kbd.scanCode}, {kbd.flags}, {kbd.dwExtraInfo}, {timestamp}, {CurrentKeyboardLayout}, {wParam}");
 #endif
-                if (kbd.flags == 0 && (Keys)vkCode == Keys.Capital)
-                {
-                    try
+                    if (kbd.flags == 0 && (Keys)vkCode == Keys.Capital)
+                    //if ((Keys)vkCode == Keys.Capital)
                     {
-                        if (CurrentKeyboardLayout == SysKeyboardLayout.CHS)
+                        //if (timestamp - last_keydown <= 32) 
+                        last_keydown = timestamp;
+                        try
                         {
-                            SendKeys.Send("^ "); //将CapsLock转换为Ctrl+Space
-                        }
-                        else if (CurrentKeyboardLayout == SysKeyboardLayout.CHT)
-                        {
-                            if (CurrentImeMode == ImeIndicatorMode.Disabled || CurrentImeMode == ImeIndicatorMode.Close)
-                                SendKeys.Send("^ "); //Open Input
-                            SendKeys.Send("+");      //将CapsLock转换为Shift
-                        }
-                        else if (CurrentKeyboardLayout == SysKeyboardLayout.CHK)
-                        {
-                            SendKeys.Send("^ "); //将CapsLock转换为Ctrl+Space
-                        }
-                        else if (CurrentKeyboardLayout == SysKeyboardLayout.JAP)
-                        {
-                            SendKeys.Send("+{CAPSLOCK}"); //将CapsLock转换为Shift+CapsLock
-                        }
-                        else if (CurrentKeyboardLayout == SysKeyboardLayout.KOR)
-                        {
-                            SendKeys.Send("^ "); //将CapsLock转换为Ctrl+Space
-                        }
+                            //Thread.Sleep(100);
+                            if (CurrentKeyboardLayout == SysKeyboardLayout.CHS)
+                            {
+                                SendKeys.Send("^ "); //将CapsLock转换为Ctrl+Space
+                            }
+                            else if (CurrentKeyboardLayout == SysKeyboardLayout.CHT)
+                            {
+                                if (CurrentImeMode == ImeIndicatorMode.Disabled || CurrentImeMode == ImeIndicatorMode.Close)
+                                    SendKeys.Send("^ "); //Open Input
+                                SendKeys.Send("+");      //将CapsLock转换为Shift
+                            }
+                            else if (CurrentKeyboardLayout == SysKeyboardLayout.CHK)
+                            {
+                                SendKeys.Send("^ "); //将CapsLock转换为Ctrl+Space
+                            }
+                            else if (CurrentKeyboardLayout == SysKeyboardLayout.JAP)
+                            {
+                                SendKeys.Send("+{CAPSLOCK}"); //将CapsLock转换为Shift+CapsLock
+                            }
+                            else if (CurrentKeyboardLayout == SysKeyboardLayout.KOR)
+                            {
+                                SendKeys.Send("^ "); //将CapsLock转换为Ctrl+Space
+                            }
 
-                        if (CapsLockLightEnabled)
-                        {
-                            if (CapsLockLightAutoCheck) CapsLockLightAuto();
-                            else CapsLockLightToggle();
+                            if (CapsLockLightEnabled)
+                            {
+                                if (CapsLockLightAutoCheck) CapsLockLightAuto();
+                                else CapsLockLightToggle();
+                            }
                         }
+                        catch (Exception)
+                        {
+                            //MessageBox.Show(ex.Message);
+                            //throw new System.ComponentModel.Win32Exception();
+                        }
+                        return (IntPtr)1;
                     }
-                    catch (Exception)
+                    else if (AutoCloseKeePassIME && CurrentImeMode == ImeIndicatorMode.Locale && kbd.flags == 0 && (Keys)vkCode == KeePassHotKey)
                     {
-                        //MessageBox.Show(ex.Message);
-                        //throw new System.ComponentModel.Win32Exception();
-                    }
-                    return (IntPtr)1;
-                }
-                else if (AutoCloseKeePassIME && CurrentImeMode == ImeIndicatorMode.Locale && kbd.flags == 0 && (Keys)vkCode == KeePassHotKey)
-                {
-                    try
-                    {
-                        if (CurrentKeyboardLayout == SysKeyboardLayout.CHS)
-                            SendKeys.Send("^ "); //将CapsLock转换为Ctrl+Space
-                        else if (CurrentKeyboardLayout == SysKeyboardLayout.CHT)
-                            SendKeys.Send("+");      //将CapsLock转换为Shift
-                        else if (CurrentKeyboardLayout == SysKeyboardLayout.CHK)
-                            SendKeys.Send("^ "); //将CapsLock转换为Ctrl+Space
-                        else if (CurrentKeyboardLayout == SysKeyboardLayout.JAP)
-                            SendKeys.Send("+{CAPSLOCK}"); //将CapsLock转换为Shift+CapsLock
-                        else if (CurrentKeyboardLayout == SysKeyboardLayout.KOR)
-                            SendKeys.Send("^ "); //将CapsLock转换为Ctrl+Space
+                        try
+                        {
+                            if (CurrentKeyboardLayout == SysKeyboardLayout.CHS)
+                                SendKeys.Send("^ "); //将CapsLock转换为Ctrl+Space
+                            else if (CurrentKeyboardLayout == SysKeyboardLayout.CHT)
+                                SendKeys.Send("+");      //将CapsLock转换为Shift
+                            else if (CurrentKeyboardLayout == SysKeyboardLayout.CHK)
+                                SendKeys.Send("^ "); //将CapsLock转换为Ctrl+Space
+                            else if (CurrentKeyboardLayout == SysKeyboardLayout.JAP)
+                                SendKeys.Send("+{CAPSLOCK}"); //将CapsLock转换为Shift+CapsLock
+                            else if (CurrentKeyboardLayout == SysKeyboardLayout.KOR)
+                                SendKeys.Send("^ "); //将CapsLock转换为Ctrl+Space
 
-                        if (CapsLockLightEnabled)
-                        {
-                            if (CapsLockLightAutoCheck) CapsLockLightAuto();
-                            else CapsLockLightOff();
+                            if (CapsLockLightEnabled)
+                            {
+                                if (CapsLockLightAutoCheck) CapsLockLightAuto();
+                                else CapsLockLightOff();
+                            }
                         }
-                    }
-                    catch (Exception)
-                    {
-                        //MessageBox.Show(ex.Message);
-                        //throw new System.ComponentModel.Win32Exception();
+                        catch (Exception)
+                        {
+                            //MessageBox.Show(ex.Message);
+                            //throw new System.ComponentModel.Win32Exception();
+                        }
                     }
                 }
             }

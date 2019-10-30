@@ -356,8 +356,10 @@ namespace Caps2CtrlSpace
 
             if(result == IntPtr.Zero)
             {
+#if DEBUG
                 IntPtr hInput = FindWindowEx(IntPtr.Zero, IntPtr.Zero, "CiceroUIWndFrame", "TF_FloatingLangBar_WndTitle");
-                Console.WriteLine(hInput);
+                //Console.WriteLine(hInput);
+#endif
             }
 
             return (result);
@@ -557,7 +559,7 @@ namespace Caps2CtrlSpace
                 if (kl == 0)
                     kl = GetConsoleKeyboardLayout();
 #if DEBUG
-                Console.WriteLine($"{activeWindowHandle}:{activeWindowThread}, - {klo}:{kl}, {Control.IsKeyLocked(Keys.CapsLock)}");
+                //Console.WriteLine($"{activeWindowHandle}:{activeWindowThread}, - {klo}:{kl}, {Control.IsKeyLocked(Keys.CapsLock)}");
 #endif
                 if (KeyMapper.CurrentKeyboardLayout != SysKeyboardLayout.ENG && Control.IsKeyLocked(Keys.CapsLock))
                 {
