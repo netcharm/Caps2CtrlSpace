@@ -400,32 +400,40 @@ namespace Caps2CtrlSpace
                 var h = rect.Bottom - rect.Top;
                 if (w > 0 && h > 0)
                 {
-                    Bitmap bmp = new Bitmap(w, h, PixelFormat.Format32bppArgb);
-                    using (Graphics gDst = Graphics.FromImage(bmp))
+                    try
                     {
-                        using (Graphics gSrc = Graphics.FromHwnd(hWnd))
+                        Bitmap bmp = new Bitmap(w, h, PixelFormat.Format32bppArgb);
+                        using (Graphics gDst = Graphics.FromImage(bmp))
                         {
-                            //gDst.FillRectangle(Brushes.Transparent, 0, 0, w, h);
-                            IntPtr hdcSrc = IntPtr.Zero;
-                            IntPtr hdcDst = IntPtr.Zero;
                             try
                             {
-                                hdcSrc = gSrc.GetHdc();
-                                hdcDst = gDst.GetHdc();
-                                bool succeeded = BitBlt(hdcDst, 0, 0, w, h, hdcSrc, 0, 0, TernaryRasterOperations.SRCCOPY);
-                                //bool succeeded = TransparentBlt(hdcDst, 0, 0, w, h, hdcSrc, 0, 0, w, h, (uint)Color.Black.ToArgb());
-                                if (succeeded) result = (Bitmap)bmp.Clone();
+                                using (Graphics gSrc = Graphics.FromHwnd(hWnd))
+                                {
+                                    //gDst.FillRectangle(Brushes.Transparent, 0, 0, w, h);
+                                    IntPtr hdcSrc = IntPtr.Zero;
+                                    IntPtr hdcDst = IntPtr.Zero;
+                                    try
+                                    {
+                                        hdcSrc = gSrc.GetHdc();
+                                        hdcDst = gDst.GetHdc();
+                                        bool succeeded = BitBlt(hdcDst, 0, 0, w, h, hdcSrc, 0, 0, TernaryRasterOperations.SRCCOPY);
+                                        //bool succeeded = TransparentBlt(hdcDst, 0, 0, w, h, hdcSrc, 0, 0, w, h, (uint)Color.Black.ToArgb());
+                                        if (succeeded) result = (Bitmap)bmp.Clone();
+                                    }
+                                    catch
+                                    {
+                                    }
+                                    finally
+                                    {
+                                        if (hdcSrc != IntPtr.Zero) gSrc.ReleaseHdc(hdcSrc);
+                                        if (hdcDst != IntPtr.Zero) gDst.ReleaseHdc(hdcSrc);
+                                    }
+                                }
                             }
-                            catch
-                            {
-                            }
-                            finally
-                            {
-                                if (hdcSrc != IntPtr.Zero) gSrc.ReleaseHdc(hdcSrc);
-                                if (hdcDst != IntPtr.Zero) gDst.ReleaseHdc(hdcSrc);
-                            }
+                            catch { }
                         }
                     }
+                    catch { }
                 }
             }
 
@@ -561,7 +569,7 @@ namespace Caps2CtrlSpace
 #if DEBUG
                 //Console.WriteLine($"{activeWindowHandle}:{activeWindowThread}, - {klo}:{kl}, {Control.IsKeyLocked(Keys.CapsLock)}");
 #endif
-                if (KeyMapper.CurrentKeyboardLayout != SysKeyboardLayout.ENG && Control.IsKeyLocked(Keys.CapsLock))
+                if (KeyMapper.CapsLockLightAutoCheck && KeyMapper.CurrentKeyboardLayout != SysKeyboardLayout.ENG && Control.IsKeyLocked(Keys.CapsLock))
                 {
                     KeyMapper.ToggleCapsLock();
                 }

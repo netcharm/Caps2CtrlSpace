@@ -557,7 +557,7 @@ namespace Caps2CtrlSpace
             if(CurrentKeyboardLayout != SysKeyboardLayout.ENG)
             {
 #if DEBUG
-                Console.WriteLine($"{CurrentKeyboardLayout}:{CurrentImeMode}");
+                //Console.WriteLine($"{CurrentKeyboardLayout}:{CurrentImeMode}");
 #endif
                 if (CurrentImeMode == ImeIndicatorMode.Locale)
                     CapsLockLightOn();
@@ -567,13 +567,26 @@ namespace Caps2CtrlSpace
         }
 
         #region Keyboard event for toggle capslock state
+        [DllImport("user32.dll",
+            CharSet = CharSet.Auto,
+            ExactSpelling = true,
+            CallingConvention = CallingConvention.Winapi)]
+        public static extern short GetKeyState(int keyCode);
+
         [DllImport("user32.dll")]
         private static extern void keybd_event(byte bVk, byte bScan, uint dwFlags, UIntPtr dwExtraInfo);
         #endregion
 
+        public static bool CapsLockState()
+        {
+            bool CapsLock = (((ushort) GetKeyState(0x14)) & 0xffff) != 0;
+            //bool NumLock = (((ushort) GetKeyState(0x90)) & 0xffff) != 0;
+            //bool ScrollLock = (((ushort) GetKeyState(0x91)) & 0xffff) != 0;
+            return (CapsLock);
+        }
+
         public static void ToggleCapsLock()
         {
-            //SendKeys.SendWait("^");
             const int KEYEVENTF_EXTENDEDKEY = 0x1;
             const int KEYEVENTF_KEYUP = 0x2;
             keybd_event(0x14, 0x45, KEYEVENTF_EXTENDEDKEY, (UIntPtr)0);
@@ -582,7 +595,18 @@ namespace Caps2CtrlSpace
 
         public static void CloseCapsLock()
         {
-            if (Control.IsKeyLocked(Keys.CapsLock)) ToggleCapsLock();
+            if (CapsLockState())
+            {
+                ToggleCapsLock();
+            }
+        }
+
+        public static void OpenCapsLock()
+        {
+            if (!CapsLockState())
+            {
+                ToggleCapsLock();
+            }
         }
 
         private const int KEYEVENTF_EXTENDEDKEY = 0x1;
@@ -621,42 +645,47 @@ namespace Caps2CtrlSpace
         private static IntPtr _keyboardHookID = IntPtr.Zero;
 
         private static int last_keydown = 0;
+        private static int count_keydown = 0;
         private static IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam)
         {
             if (nCode >= 0 && (wParam == (IntPtr)WM_KEYDOWN || wParam == (IntPtr)WM_SYSKEYDOWN) && CurrentImeMode != ImeIndicatorMode.Disabled && CapsLockEnabledLayout.Contains(CurrentKeyboardLayout))
-//            {
-//                var kbd = (KBDLLHOOKSTRUCT)Marshal.PtrToStructure(lParam, typeof(KBDLLHOOKSTRUCT));
-//                int vkCode = kbd.vkCode; //Marshal.ReadInt32(lParam);
-//                if (kbd.flags != 0)
-//                    last_keydown = kbd.time;
-//#if DEBUG
-//                Console.WriteLine($"KeyDown: {vkCode}, {kbd.scanCode}, {kbd.flags}, {kbd.dwExtraInfo}, {last_keydown}, {CurrentKeyboardLayout}, {wParam}");
-//#endif
-//            }
-//            else if (nCode >= 0 && (wParam == (IntPtr)WM_KEYUP || wParam == (IntPtr)WM_SYSKEYUP) && CurrentImeMode != ImeIndicatorMode.Disabled && CapsLockEnabledLayout.Contains(CurrentKeyboardLayout))
             {
                 var kbd = (KBDLLHOOKSTRUCT)Marshal.PtrToStructure(lParam, typeof(KBDLLHOOKSTRUCT));
                 int vkCode = kbd.vkCode; //Marshal.ReadInt32(lParam);
                 int timestamp = kbd.time;
-                //if (timestamp - last_keydown > 2000)
-                //{
-                //    ToggleCapsLock();
-                //}
-                //else if (timestamp - last_keydown < 1000 || last_keydown == 0)
-                //if (timestamp - last_keydown < 1000 || last_keydown == 0)
-                //if(timestamp - last_keydown <= 32 || last_keydown == 0)
+                if (last_keydown == 0) last_keydown = timestamp - 31;
+
+                if (kbd.flags == 0 && (Keys)vkCode == Keys.Capital)
                 {
+                    var diff = timestamp - last_keydown;
 #if DEBUG
-                    Console.WriteLine($"KeyDown: {vkCode}, {kbd.scanCode}, {kbd.flags}, {kbd.dwExtraInfo}, {timestamp}, {CurrentKeyboardLayout}, {wParam}");
+                    Console.WriteLine($"KeyDown: {vkCode}, {kbd.scanCode}, {kbd.flags}, {kbd.dwExtraInfo}, {last_keydown}/{timestamp}, {timestamp - last_keydown}, {CurrentKeyboardLayout}, {wParam}, {count_keydown}");
 #endif
-                    if (kbd.flags == 0 && (Keys)vkCode == Keys.Capital)
-                    //if ((Keys)vkCode == Keys.Capital)
+                    last_keydown = timestamp;
+
+                    if ( diff <= 63 || diff == 500)
+                        count_keydown++;
+                    else
+                        count_keydown = 0;
+
+                    if (count_keydown > 1 && diff == 500)
                     {
-                        //if (timestamp - last_keydown <= 32) 
-                        last_keydown = timestamp;
+                        //ToggleCapsLock();
+                        //OpenCapsLock();
+                        return CallNextHookEx(_keyboardHookID, nCode, wParam, lParam);
+                        //return (IntPtr)1;
+                    }
+
+                    if (count_keydown < 1)
+                    {
+                        //if (diff == 500)
+                        //{
+                        //    //count_keydown++;
+                        //    return CallNextHookEx(_keyboardHookID, nCode, wParam, lParam);
+                        //}
+
                         try
                         {
-                            //Thread.Sleep(100);
                             if (CurrentKeyboardLayout == SysKeyboardLayout.CHS)
                             {
                                 SendKeys.Send("^ "); //将CapsLock转换为Ctrl+Space
@@ -693,32 +722,32 @@ namespace Caps2CtrlSpace
                         }
                         return (IntPtr)1;
                     }
-                    else if (AutoCloseKeePassIME && CurrentImeMode == ImeIndicatorMode.Locale && kbd.flags == 0 && (Keys)vkCode == KeePassHotKey)
+                }
+                else if (AutoCloseKeePassIME && CurrentImeMode == ImeIndicatorMode.Locale && kbd.flags == 0 && (Keys)vkCode == KeePassHotKey)
+                {
+                    try
                     {
-                        try
-                        {
-                            if (CurrentKeyboardLayout == SysKeyboardLayout.CHS)
-                                SendKeys.Send("^ "); //将CapsLock转换为Ctrl+Space
-                            else if (CurrentKeyboardLayout == SysKeyboardLayout.CHT)
-                                SendKeys.Send("+");      //将CapsLock转换为Shift
-                            else if (CurrentKeyboardLayout == SysKeyboardLayout.CHK)
-                                SendKeys.Send("^ "); //将CapsLock转换为Ctrl+Space
-                            else if (CurrentKeyboardLayout == SysKeyboardLayout.JAP)
-                                SendKeys.Send("+{CAPSLOCK}"); //将CapsLock转换为Shift+CapsLock
-                            else if (CurrentKeyboardLayout == SysKeyboardLayout.KOR)
-                                SendKeys.Send("^ "); //将CapsLock转换为Ctrl+Space
+                        if (CurrentKeyboardLayout == SysKeyboardLayout.CHS)
+                            SendKeys.Send("^ "); //将CapsLock转换为Ctrl+Space
+                        else if (CurrentKeyboardLayout == SysKeyboardLayout.CHT)
+                            SendKeys.Send("+");      //将CapsLock转换为Shift
+                        else if (CurrentKeyboardLayout == SysKeyboardLayout.CHK)
+                            SendKeys.Send("^ "); //将CapsLock转换为Ctrl+Space
+                        else if (CurrentKeyboardLayout == SysKeyboardLayout.JAP)
+                            SendKeys.Send("+{CAPSLOCK}"); //将CapsLock转换为Shift+CapsLock
+                        else if (CurrentKeyboardLayout == SysKeyboardLayout.KOR)
+                            SendKeys.Send("^ "); //将CapsLock转换为Ctrl+Space
 
-                            if (CapsLockLightEnabled)
-                            {
-                                if (CapsLockLightAutoCheck) CapsLockLightAuto();
-                                else CapsLockLightOff();
-                            }
-                        }
-                        catch (Exception)
+                        if (CapsLockLightEnabled)
                         {
-                            //MessageBox.Show(ex.Message);
-                            //throw new System.ComponentModel.Win32Exception();
+                            if (CapsLockLightAutoCheck) CapsLockLightAuto();
+                            else CapsLockLightOff();
                         }
+                    }
+                    catch (Exception)
+                    {
+                        //MessageBox.Show(ex.Message);
+                        //throw new System.ComponentModel.Win32Exception();
                     }
                 }
             }
