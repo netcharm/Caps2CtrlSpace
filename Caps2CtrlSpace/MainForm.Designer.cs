@@ -40,6 +40,7 @@
             this.lblImeLayout = new System.Windows.Forms.Label();
             this.lblWindowText = new System.Windows.Forms.Label();
             this.grpOptions = new System.Windows.Forms.GroupBox();
+            this.edAutoCheckInterval = new System.Windows.Forms.NumericUpDown();
             this.lblKeePassHotKey = new System.Windows.Forms.Label();
             this.edKeePassHotKey = new System.Windows.Forms.TextBox();
             this.chkImeAutoCloseKeePass = new System.Windows.Forms.CheckBox();
@@ -57,13 +58,12 @@
             this.tsmiSepInputIndicator = new System.Windows.Forms.ToolStripSeparator();
             this.tsmiInputIndicator = new System.Windows.Forms.ToolStripMenuItem();
             this.picInputIndicator = new System.Windows.Forms.PictureBox();
-            this.edAutoCheckInterval = new System.Windows.Forms.NumericUpDown();
             this.cmsNotifyIcon.SuspendLayout();
             this.grpOptions.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.edAutoCheckInterval)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.picImeMode)).BeginInit();
             this.cmsImeMode.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.picInputIndicator)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.edAutoCheckInterval)).BeginInit();
             this.SuspendLayout();
             // 
             // lblTitle
@@ -123,7 +123,7 @@
             // lblImeLayout
             // 
             this.lblImeLayout.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.lblImeLayout.Location = new System.Drawing.Point(8, 280);
+            this.lblImeLayout.Location = new System.Drawing.Point(8, 318);
             this.lblImeLayout.Name = "lblImeLayout";
             this.lblImeLayout.Padding = new System.Windows.Forms.Padding(0, 4, 0, 0);
             this.lblImeLayout.Size = new System.Drawing.Size(441, 31);
@@ -134,7 +134,7 @@
             // 
             this.lblWindowText.AutoEllipsis = true;
             this.lblWindowText.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.lblWindowText.Location = new System.Drawing.Point(8, 249);
+            this.lblWindowText.Location = new System.Drawing.Point(8, 287);
             this.lblWindowText.Margin = new System.Windows.Forms.Padding(3, 0, 3, 4);
             this.lblWindowText.Name = "lblWindowText";
             this.lblWindowText.Padding = new System.Windows.Forms.Padding(0, 0, 0, 4);
@@ -156,18 +156,48 @@
             this.grpOptions.Controls.Add(this.chkCapsState);
             this.grpOptions.Controls.Add(this.chkOnTop);
             this.grpOptions.Controls.Add(this.chkAutoRun);
-            this.grpOptions.Location = new System.Drawing.Point(35, 63);
+            this.grpOptions.Location = new System.Drawing.Point(10, 63);
             this.grpOptions.Margin = new System.Windows.Forms.Padding(16);
             this.grpOptions.Name = "grpOptions";
             this.grpOptions.Padding = new System.Windows.Forms.Padding(8);
-            this.grpOptions.Size = new System.Drawing.Size(387, 184);
+            this.grpOptions.Size = new System.Drawing.Size(436, 216);
             this.grpOptions.TabIndex = 7;
             this.grpOptions.TabStop = false;
             this.grpOptions.Text = "Options";
             // 
+            // edAutoCheckInterval
+            // 
+            this.edAutoCheckInterval.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.edAutoCheckInterval.Increment = new decimal(new int[] {
+            10,
+            0,
+            0,
+            0});
+            this.edAutoCheckInterval.Location = new System.Drawing.Point(372, 110);
+            this.edAutoCheckInterval.Maximum = new decimal(new int[] {
+            500,
+            0,
+            0,
+            0});
+            this.edAutoCheckInterval.Minimum = new decimal(new int[] {
+            50,
+            0,
+            0,
+            0});
+            this.edAutoCheckInterval.Name = "edAutoCheckInterval";
+            this.edAutoCheckInterval.Size = new System.Drawing.Size(56, 21);
+            this.edAutoCheckInterval.TabIndex = 13;
+            this.edAutoCheckInterval.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.edAutoCheckInterval.Value = new decimal(new int[] {
+            100,
+            0,
+            0,
+            0});
+            this.edAutoCheckInterval.ValueChanged += new System.EventHandler(this.edAutoCheckInterval_ValueChanged);
+            // 
             // lblKeePassHotKey
             // 
-            this.lblKeePassHotKey.Location = new System.Drawing.Point(12, 148);
+            this.lblKeePassHotKey.Location = new System.Drawing.Point(12, 178);
             this.lblKeePassHotKey.Name = "lblKeePassHotKey";
             this.lblKeePassHotKey.Size = new System.Drawing.Size(94, 21);
             this.lblKeePassHotKey.TabIndex = 12;
@@ -177,7 +207,7 @@
             // 
             // edKeePassHotKey
             // 
-            this.edKeePassHotKey.Location = new System.Drawing.Point(112, 148);
+            this.edKeePassHotKey.Location = new System.Drawing.Point(112, 178);
             this.edKeePassHotKey.Name = "edKeePassHotKey";
             this.edKeePassHotKey.Size = new System.Drawing.Size(141, 21);
             this.edKeePassHotKey.TabIndex = 11;
@@ -187,12 +217,13 @@
             // 
             // chkImeAutoCloseKeePass
             // 
-            this.chkImeAutoCloseKeePass.AutoSize = true;
             this.chkImeAutoCloseKeePass.Dock = System.Windows.Forms.DockStyle.Top;
-            this.chkImeAutoCloseKeePass.Location = new System.Drawing.Point(8, 118);
+            this.chkImeAutoCloseKeePass.Font = new System.Drawing.Font("宋体", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Pixel, ((byte)(0)));
+            this.chkImeAutoCloseKeePass.Location = new System.Drawing.Point(8, 134);
+            this.chkImeAutoCloseKeePass.Margin = new System.Windows.Forms.Padding(0, 4, 0, 4);
             this.chkImeAutoCloseKeePass.Name = "chkImeAutoCloseKeePass";
-            this.chkImeAutoCloseKeePass.Padding = new System.Windows.Forms.Padding(4);
-            this.chkImeAutoCloseKeePass.Size = new System.Drawing.Size(371, 24);
+            this.chkImeAutoCloseKeePass.Padding = new System.Windows.Forms.Padding(0, 4, 2, 4);
+            this.chkImeAutoCloseKeePass.Size = new System.Drawing.Size(420, 28);
             this.chkImeAutoCloseKeePass.TabIndex = 10;
             this.chkImeAutoCloseKeePass.Text = "Auto Close IME Before KeePass HotKey Press";
             this.chkImeAutoCloseKeePass.UseVisualStyleBackColor = true;
@@ -202,7 +233,7 @@
             // 
             this.edTest.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.edTest.ImeMode = System.Windows.Forms.ImeMode.Off;
-            this.edTest.Location = new System.Drawing.Point(279, 148);
+            this.edTest.Location = new System.Drawing.Point(328, 178);
             this.edTest.Name = "edTest";
             this.edTest.Size = new System.Drawing.Size(100, 21);
             this.edTest.TabIndex = 9;
@@ -211,12 +242,13 @@
             // 
             // chkAutoCheckImeMode
             // 
-            this.chkAutoCheckImeMode.AutoSize = true;
             this.chkAutoCheckImeMode.Dock = System.Windows.Forms.DockStyle.Top;
-            this.chkAutoCheckImeMode.Location = new System.Drawing.Point(8, 94);
+            this.chkAutoCheckImeMode.Font = new System.Drawing.Font("宋体", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Pixel, ((byte)(0)));
+            this.chkAutoCheckImeMode.Location = new System.Drawing.Point(8, 106);
+            this.chkAutoCheckImeMode.Margin = new System.Windows.Forms.Padding(0, 4, 0, 4);
             this.chkAutoCheckImeMode.Name = "chkAutoCheckImeMode";
-            this.chkAutoCheckImeMode.Padding = new System.Windows.Forms.Padding(4);
-            this.chkAutoCheckImeMode.Size = new System.Drawing.Size(371, 24);
+            this.chkAutoCheckImeMode.Padding = new System.Windows.Forms.Padding(0, 4, 2, 4);
+            this.chkAutoCheckImeMode.Size = new System.Drawing.Size(420, 28);
             this.chkAutoCheckImeMode.TabIndex = 7;
             this.chkAutoCheckImeMode.Text = "Auto Check IME Mode (Will increase CPU usage)";
             this.chkAutoCheckImeMode.UseVisualStyleBackColor = true;
@@ -224,12 +256,13 @@
             // 
             // chkCapsState
             // 
-            this.chkCapsState.AutoSize = true;
             this.chkCapsState.Dock = System.Windows.Forms.DockStyle.Top;
-            this.chkCapsState.Location = new System.Drawing.Point(8, 70);
+            this.chkCapsState.Font = new System.Drawing.Font("宋体", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Pixel, ((byte)(0)));
+            this.chkCapsState.Location = new System.Drawing.Point(8, 78);
+            this.chkCapsState.Margin = new System.Windows.Forms.Padding(0, 4, 0, 4);
             this.chkCapsState.Name = "chkCapsState";
-            this.chkCapsState.Padding = new System.Windows.Forms.Padding(4);
-            this.chkCapsState.Size = new System.Drawing.Size(371, 24);
+            this.chkCapsState.Padding = new System.Windows.Forms.Padding(0, 4, 2, 4);
+            this.chkCapsState.Size = new System.Drawing.Size(420, 28);
             this.chkCapsState.TabIndex = 6;
             this.chkCapsState.Text = "Enabled CapsLock Indicator Light (If Available)";
             this.chkCapsState.UseVisualStyleBackColor = true;
@@ -237,12 +270,13 @@
             // 
             // chkOnTop
             // 
-            this.chkOnTop.AutoSize = true;
             this.chkOnTop.Dock = System.Windows.Forms.DockStyle.Top;
-            this.chkOnTop.Location = new System.Drawing.Point(8, 46);
+            this.chkOnTop.Font = new System.Drawing.Font("宋体", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Pixel, ((byte)(0)));
+            this.chkOnTop.Location = new System.Drawing.Point(8, 50);
+            this.chkOnTop.Margin = new System.Windows.Forms.Padding(0, 4, 0, 4);
             this.chkOnTop.Name = "chkOnTop";
-            this.chkOnTop.Padding = new System.Windows.Forms.Padding(4);
-            this.chkOnTop.Size = new System.Drawing.Size(371, 24);
+            this.chkOnTop.Padding = new System.Windows.Forms.Padding(0, 4, 2, 4);
+            this.chkOnTop.Size = new System.Drawing.Size(420, 28);
             this.chkOnTop.TabIndex = 8;
             this.chkOnTop.Text = "Always On Top";
             this.chkOnTop.UseVisualStyleBackColor = true;
@@ -250,13 +284,13 @@
             // 
             // chkAutoRun
             // 
-            this.chkAutoRun.AutoSize = true;
             this.chkAutoRun.Dock = System.Windows.Forms.DockStyle.Top;
+            this.chkAutoRun.Font = new System.Drawing.Font("宋体", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Pixel, ((byte)(0)));
             this.chkAutoRun.Location = new System.Drawing.Point(8, 22);
-            this.chkAutoRun.Margin = new System.Windows.Forms.Padding(2);
+            this.chkAutoRun.Margin = new System.Windows.Forms.Padding(0, 4, 0, 4);
             this.chkAutoRun.Name = "chkAutoRun";
-            this.chkAutoRun.Padding = new System.Windows.Forms.Padding(4);
-            this.chkAutoRun.Size = new System.Drawing.Size(371, 24);
+            this.chkAutoRun.Padding = new System.Windows.Forms.Padding(0, 4, 2, 4);
+            this.chkAutoRun.Size = new System.Drawing.Size(420, 28);
             this.chkAutoRun.TabIndex = 5;
             this.chkAutoRun.Text = "Auto Run Application When Windows Startup";
             this.chkAutoRun.UseVisualStyleBackColor = true;
@@ -266,7 +300,7 @@
             // 
             this.picImeMode.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.picImeMode.ContextMenuStrip = this.cmsImeMode;
-            this.picImeMode.Location = new System.Drawing.Point(10, 282);
+            this.picImeMode.Location = new System.Drawing.Point(10, 320);
             this.picImeMode.Name = "picImeMode";
             this.picImeMode.Size = new System.Drawing.Size(25, 26);
             this.picImeMode.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
@@ -336,48 +370,18 @@
             // 
             this.picInputIndicator.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.picInputIndicator.ContextMenuStrip = this.cmsImeMode;
-            this.picInputIndicator.Location = new System.Drawing.Point(421, 282);
+            this.picInputIndicator.Location = new System.Drawing.Point(421, 320);
             this.picInputIndicator.Name = "picInputIndicator";
             this.picInputIndicator.Size = new System.Drawing.Size(25, 26);
             this.picInputIndicator.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
             this.picInputIndicator.TabIndex = 9;
             this.picInputIndicator.TabStop = false;
             // 
-            // edAutoCheckInterval
-            // 
-            this.edAutoCheckInterval.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.edAutoCheckInterval.Increment = new decimal(new int[] {
-            10,
-            0,
-            0,
-            0});
-            this.edAutoCheckInterval.Location = new System.Drawing.Point(323, 96);
-            this.edAutoCheckInterval.Maximum = new decimal(new int[] {
-            500,
-            0,
-            0,
-            0});
-            this.edAutoCheckInterval.Minimum = new decimal(new int[] {
-            50,
-            0,
-            0,
-            0});
-            this.edAutoCheckInterval.Name = "edAutoCheckInterval";
-            this.edAutoCheckInterval.Size = new System.Drawing.Size(56, 21);
-            this.edAutoCheckInterval.TabIndex = 13;
-            this.edAutoCheckInterval.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            this.edAutoCheckInterval.Value = new decimal(new int[] {
-            100,
-            0,
-            0,
-            0});
-            this.edAutoCheckInterval.ValueChanged += new System.EventHandler(this.edAutoCheckInterval_ValueChanged);
-            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
-            this.ClientSize = new System.Drawing.Size(457, 319);
+            this.ClientSize = new System.Drawing.Size(457, 357);
             this.Controls.Add(this.picInputIndicator);
             this.Controls.Add(this.picImeMode);
             this.Controls.Add(this.grpOptions);
@@ -397,10 +401,10 @@
             this.cmsNotifyIcon.ResumeLayout(false);
             this.grpOptions.ResumeLayout(false);
             this.grpOptions.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.edAutoCheckInterval)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.picImeMode)).EndInit();
             this.cmsImeMode.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.picInputIndicator)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.edAutoCheckInterval)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 

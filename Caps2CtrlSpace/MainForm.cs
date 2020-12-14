@@ -100,6 +100,17 @@ namespace Caps2CtrlSpace
                 appSection.Settings.Add("KeePassHotKey", edKeePassHotKey.Text);
                 updateConfig = true;
             }
+            try
+            {
+                double Tolerance = 0.10;
+                double.TryParse(appSection.Settings["ModeDetectTolerance"].Value, out Tolerance);
+                Ime.Tolerance = Tolerance;
+            }
+            catch
+            {
+                appSection.Settings.Add("ModeDetectTolerance", $"{Ime.Tolerance}");
+                updateConfig = true;
+            }
 
             if (updateConfig) config.Save();
             updateConfig = false;
@@ -120,6 +131,7 @@ namespace Caps2CtrlSpace
                     appSection.Settings["AlwaysOnTop"].Value = chkOnTop.Checked.ToString();
                     appSection.Settings["AutoCloseKeePassIME"].Value = chkImeAutoCloseKeePass.Checked.ToString();
                     appSection.Settings["KeePassHotKey"].Value = edKeePassHotKey.Text.Trim();
+                    appSection.Settings["ModeDetectTolerance"].Value = Ime.Tolerance.ToString();
 
                     config.Save();
                     updateConfig = false;
@@ -249,7 +261,7 @@ namespace Caps2CtrlSpace
                 else
                     edTest.ImeMode = ImeMode.Off;
             }
-            else if(KeyMapper.CurrentKeyboardLayout == SysKeyboardLayout.CHT)
+            else if (KeyMapper.CurrentKeyboardLayout == SysKeyboardLayout.CHT)
             {
                 if (edTest.ImeMode == ImeMode.On)
                     edTest.ImeMode = ImeMode.Off;
@@ -355,7 +367,7 @@ namespace Caps2CtrlSpace
         {
             Close();
         }
-    
+
         private void tsmiImeState_Click(object sender, EventArgs e)
         {
             if (sender == tsmiImeModeEnglish && picImeMode.Image is Bitmap)
@@ -473,12 +485,13 @@ namespace Caps2CtrlSpace
 
         private void timer_Tick(object sender, EventArgs e)
         {
+            if (Ime.GetLastInputTime() > 5) GC.Collect();
             if (Ime.GetLastInputTime() > 1) return;
             if (chkCapsState.Checked || chkAutoCheckImeMode.Checked)
             {
                 var currentLayout = Ime.KeyboardLayout;
                 var currentMode = Ime.Mode;
-                if(currentMode != ImeIndicatorMode.Disabled)
+                if (currentMode != ImeIndicatorMode.Disabled)
                 {
                     KeyMapper.CapsLockLightAutoCheck = chkCapsState.Checked;
                     KeyMapper.CurrentImeMode = currentMode;
@@ -500,6 +513,5 @@ namespace Caps2CtrlSpace
                 edTest.Text = edTest.ImeMode.ToString();
             }
         }
-
     }
 }

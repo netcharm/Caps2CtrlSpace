@@ -70,7 +70,7 @@ namespace Caps2CtrlSpace
     }
 
     public enum ImeBarState { System, Embed, Float };
-    public enum ImeIndicatorMode { Layout=0, English, Locale, Disabled, Close };
+    public enum ImeIndicatorMode { Layout = 0, English, Locale, Disabled, Close };
 
     public enum ImeIndicatorModeN
     {
@@ -146,18 +146,18 @@ namespace Caps2CtrlSpace
         [DllImport("gdi32.dll", EntryPoint = "BitBlt", CharSet = CharSet.Auto, SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         private static extern bool BitBlt(
-            [In] IntPtr hdc, 
-            int nXDest, int nYDest, int nWidth, int nHeight, 
-            [In] IntPtr hdcSrc, 
-            int nXSrc, int nYSrc, 
+            [In] IntPtr hdc,
+            int nXDest, int nYDest, int nWidth, int nHeight,
+            [In] IntPtr hdcSrc,
+            int nXSrc, int nYSrc,
             TernaryRasterOperations dwRop);
 
         [DllImport("msimg32.dll", CharSet = CharSet.Auto, SetLastError = true)]
         public static extern bool TransparentBlt(
-            [In] IntPtr hdcDest, 
-            int nXDest, int nYDest, int nWDest, int nHDest, 
-            [In] IntPtr hdcSrc, 
-            int nXSrc, int nYSrc, int nWSrc, int nHSrc, 
+            [In] IntPtr hdcDest,
+            int nXDest, int nYDest, int nWDest, int nHDest,
+            [In] IntPtr hdcSrc,
+            int nXSrc, int nYSrc, int nWSrc, int nHSrc,
             uint crTransparent);
 
         // 创建结构体用于返回捕获时间  
@@ -258,6 +258,8 @@ namespace Caps2CtrlSpace
             }
         }
 
+        public static double Tolerance { get; set; } = 0.05;
+
         public static ImeIndicatorMode Mode
         {
             get
@@ -340,7 +342,7 @@ namespace Caps2CtrlSpace
             IntPtr result = IntPtr.Zero;
 
             IntPtr hWnd = FindWindow("Shell_TrayWnd", null);
-            if(hWnd != IntPtr.Zero)
+            if (hWnd != IntPtr.Zero)
             {
                 IntPtr hTray = FindWindowEx(hWnd, IntPtr.Zero, "TrayNotifyWnd", null);
                 if (hTray != IntPtr.Zero)
@@ -354,7 +356,7 @@ namespace Caps2CtrlSpace
                 }
             }
 
-            if(result == IntPtr.Zero)
+            if (result == IntPtr.Zero)
             {
 #if DEBUG
                 IntPtr hInput = FindWindowEx(IntPtr.Zero, IntPtr.Zero, "CiceroUIWndFrame", "TF_FloatingLangBar_WndTitle");
@@ -405,32 +407,26 @@ namespace Caps2CtrlSpace
                         Bitmap bmp = new Bitmap(w, h, PixelFormat.Format32bppArgb);
                         using (Graphics gDst = Graphics.FromImage(bmp))
                         {
-                            try
+                            using (Graphics gSrc = Graphics.FromHwnd(hWnd))
                             {
-                                using (Graphics gSrc = Graphics.FromHwnd(hWnd))
+                                //gDst.FillRectangle(Brushes.Transparent, 0, 0, w, h);
+                                IntPtr hdcSrc = IntPtr.Zero;
+                                IntPtr hdcDst = IntPtr.Zero;
+                                try
                                 {
-                                    //gDst.FillRectangle(Brushes.Transparent, 0, 0, w, h);
-                                    IntPtr hdcSrc = IntPtr.Zero;
-                                    IntPtr hdcDst = IntPtr.Zero;
-                                    try
-                                    {
-                                        hdcSrc = gSrc.GetHdc();
-                                        hdcDst = gDst.GetHdc();
-                                        bool succeeded = BitBlt(hdcDst, 0, 0, w, h, hdcSrc, 0, 0, TernaryRasterOperations.SRCCOPY);
-                                        //bool succeeded = TransparentBlt(hdcDst, 0, 0, w, h, hdcSrc, 0, 0, w, h, (uint)Color.Black.ToArgb());
-                                        if (succeeded) result = (Bitmap)bmp.Clone();
-                                    }
-                                    catch
-                                    {
-                                    }
-                                    finally
-                                    {
-                                        if (hdcSrc != IntPtr.Zero) gSrc.ReleaseHdc(hdcSrc);
-                                        if (hdcDst != IntPtr.Zero) gDst.ReleaseHdc(hdcSrc);
-                                    }
+                                    hdcSrc = gSrc.GetHdc();
+                                    hdcDst = gDst.GetHdc();
+                                    bool succeeded = BitBlt(hdcDst, 0, 0, w, h, hdcSrc, 0, 0, TernaryRasterOperations.SRCCOPY);
+                                    //bool succeeded = TransparentBlt(hdcDst, 0, 0, w, h, hdcSrc, 0, 0, w, h, (uint)Color.Black.ToArgb());
+                                    if (succeeded) result = (Bitmap)bmp.Clone();
+                                }
+                                catch { }
+                                finally
+                                {
+                                    if (hdcSrc != IntPtr.Zero) gSrc.ReleaseHdc(hdcSrc);
+                                    if (hdcDst != IntPtr.Zero) gDst.ReleaseHdc(hdcSrc);
                                 }
                             }
-                            catch { }
                         }
                     }
                     catch { }
@@ -446,7 +442,7 @@ namespace Caps2CtrlSpace
             var hWnd = GetImeModeButtonHandle();
             if (hWnd != IntPtr.Zero)
                 result = GetSanpshot(hWnd);
-            return(result);
+            return (result);
         }
 
         public static Bitmap GetInputIndicatorBitmap()
@@ -476,7 +472,7 @@ namespace Caps2CtrlSpace
             return (result);
         }
 
-        public static bool CompareBitmap(Bitmap src, Bitmap dst, double tolerance=0.05)
+        public static bool CompareBitmap(Bitmap src, Bitmap dst, double tolerance = 0.05)
         {
             bool result = false;
 
@@ -535,7 +531,7 @@ namespace Caps2CtrlSpace
                     var ckl = il.Culture.KeyboardLayoutId;
                     if (ImeIndicators.ContainsKey(ckl) && ImeIndicators[ckl].Layout is Bitmap)
                     {
-                        if (CompareBitmap(CurrentInputIndicatorBitmap, ImeIndicators[ckl].Layout, 0.01))
+                        if (CompareBitmap(CurrentInputIndicatorBitmap, ImeIndicators[ckl].Layout, Tolerance))
                         {
                             kl = ckl;
                             break;
@@ -587,16 +583,16 @@ namespace Caps2CtrlSpace
 
             CurrentInputIndicatorBitmap = GetInputIndicatorBitmap();
             CurrentImeModeBitmap = GetImeModeBitmap();
-            if(CurrentImeModeBitmap is Bitmap)
+            if (CurrentImeModeBitmap is Bitmap)
             {
                 var kl = KeyboardLayout;
                 if (ImeIndicators.ContainsKey(kl) && ImeIndicators[kl].Locale is Bitmap)
                 {
-                    if (CompareBitmap(CurrentImeModeBitmap, ImeIndicators[kl].Close))
+                    if (CompareBitmap(CurrentImeModeBitmap, ImeIndicators[kl].Close, Tolerance))
                         result = ImeIndicatorMode.Close;
-                    else if (CompareBitmap(CurrentImeModeBitmap, ImeIndicators[kl].Locale))
+                    else if (CompareBitmap(CurrentImeModeBitmap, ImeIndicators[kl].Locale, Tolerance))
                         result = ImeIndicatorMode.Locale;
-                    else if (CompareBitmap(CurrentImeModeBitmap, ImeIndicators[kl].English))
+                    else if (CompareBitmap(CurrentImeModeBitmap, ImeIndicators[kl].English, Tolerance))
                         result = ImeIndicatorMode.English;
                 }
             }
